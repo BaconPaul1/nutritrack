@@ -170,7 +170,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v1.6 Loaded");
+  console.log("NutriTrack v1.7 Loaded");
   load();
   if (State.profile) {
     showApp();

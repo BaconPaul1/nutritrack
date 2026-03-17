@@ -649,7 +649,8 @@ input[type="date"] {
   .diary-summary-bar { grid-template-columns: repeat(3,1fr); }
   .exercise-grid { grid-template-columns: 1fr; }
   .strength-form { grid-template-columns: 1fr 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  .form-group.full { grid-column: auto !important; }
   .micro-grid { grid-template-columns: 1fr; }
   .bmr-display { grid-template-columns: 1fr; }
   .weight-input-form { flex-direction: column; }
@@ -1085,7 +1086,7 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
             <label>身高 (cm)</label>
             <input type="number" id="st-height" />
           </div>
-          <div class="form-group" style="grid-column: span 2;">
+          <div class="form-group full">
             <label>目前體重 (kg) - <small>如需記錄進度請至「體重進度」頁面</small></label>
             <input type="number" id="st-weight" />
           </div>
@@ -1207,8 +1208,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
     </div>
   </div>
 
-  <script src="db.js?v=1.6"></script>
-  <script src="app.js?v=1.6"></script>
+  <script src="db.js?v=1.7"></script>
+  <script src="app.js?v=1.7"></script>
   
 
   <script>
@@ -1502,7 +1503,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v1.6 Loaded");
+  console.log("NutriTrack v1.7 Loaded");
   load();
   if (State.profile) {
     showApp();

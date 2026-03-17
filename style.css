@@ -632,7 +632,8 @@ input[type="date"] {
   .diary-summary-bar { grid-template-columns: repeat(3,1fr); }
   .exercise-grid { grid-template-columns: 1fr; }
   .strength-form { grid-template-columns: 1fr 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  .form-group.full { grid-column: auto !important; }
   .micro-grid { grid-template-columns: 1fr; }
   .bmr-display { grid-template-columns: 1fr; }
   .weight-input-form { flex-direction: column; }
