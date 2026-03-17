@@ -337,42 +337,71 @@
           </div>
         </div>
 
-        <h4 style="margin:24px 0 16px">活動量等級</h4>
-        <div class="activity-selector">
+        <h4 style="margin:24px 0 12px">活動量等級</h4>
+        <div class="activity-cards">
           <label class="activity-card">
-            <input type="radio" name="st-activity" value="1.2" />
-            <div class="activity-info"><strong>久坐</strong><span>幾乎不運動</span></div>
+            <input type="radio" name="st-activity" value="1.4" />
+            <div class="activity-content">
+              <span class="activity-icon">🪑</span>
+              <span class="activity-name">久坐不動</span>
+              <span class="activity-desc">很少走動</span>
+              <span class="activity-mult">×1.4</span>
+            </div>
           </label>
           <label class="activity-card">
-            <input type="radio" name="st-activity" value="1.375" />
-            <div class="activity-info"><strong>輕度</strong><span>每週運動 1-3 天</span></div>
+            <input type="radio" name="st-activity" value="1.6" />
+            <div class="activity-content">
+              <span class="activity-icon">🚶</span>
+              <span class="activity-name">輕度活動</span>
+              <span class="activity-desc">需站立走動</span>
+              <span class="activity-mult">×1.6</span>
+            </div>
           </label>
           <label class="activity-card">
-            <input type="radio" name="st-activity" value="1.55" />
-            <div class="activity-info"><strong>中度</strong><span>每週運動 3-5 天</span></div>
+            <input type="radio" name="st-activity" value="1.8" />
+            <div class="activity-content">
+              <span class="activity-icon">🏃</span>
+              <span class="activity-name">中度活動</span>
+              <span class="activity-desc">體力耗費較大</span>
+              <span class="activity-mult">×1.8</span>
+            </div>
           </label>
           <label class="activity-card">
-            <input type="radio" name="st-activity" value="1.725" />
-            <div class="activity-info"><strong>高度</strong><span>每週運動 6-7 天</span></div>
+            <input type="radio" name="st-activity" value="2.0" />
+            <div class="activity-content">
+              <span class="activity-icon">⛏️</span>
+              <span class="activity-name">高度活動</span>
+              <span class="activity-desc">重體力勞動</span>
+              <span class="activity-mult">×2.0</span>
+            </div>
           </label>
         </div>
 
-        <h4 style="margin:24px 0 16px">體重目標</h4>
-        <div class="goal-selector">
+        <h4 style="margin:24px 0 12px">體重目標</h4>
+        <div class="goal-cards">
           <label class="goal-card">
-            <input type="radio" name="st-goal" value="lose" />
-            <div class="goal-icon">🥗</div>
-            <div class="goal-name">健康減重</div>
+            <input type="radio" name="st-goal" value="-500" />
+            <div class="goal-content">
+              <span class="goal-icon">🥗</span>
+              <span class="goal-name">健康減重</span>
+              <span class="goal-desc">約減 0.5kg/週</span>
+            </div>
           </label>
           <label class="goal-card">
-            <input type="radio" name="st-goal" value="maintain" />
-            <div class="goal-icon">⚖️</div>
-            <div class="goal-name">維持體重</div>
+            <input type="radio" name="st-goal" value="0" />
+            <div class="goal-content">
+              <span class="goal-icon">⚖️</span>
+              <span class="goal-name">維持體重</span>
+              <span class="goal-desc">保持現狀</span>
+            </div>
           </label>
           <label class="goal-card">
-            <input type="radio" name="st-goal" value="gain" />
-            <div class="goal-icon">💪</div>
-            <div class="goal-name">肌肉增重</div>
+            <input type="radio" name="st-goal" value="500" />
+            <div class="goal-content">
+              <span class="goal-icon">💪</span>
+              <span class="goal-name">肌肉增重</span>
+              <span class="goal-desc">約增 0.5kg/週</span>
+            </div>
           </label>
         </div>
 

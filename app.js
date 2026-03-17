@@ -184,7 +184,7 @@ function openSettingsModal() {
   document.getElementById('st-height').value = p.height;
   document.getElementById('st-weight').value = p.weight;
   
-  // Set radio buttons
+  // Set radio buttons - use toString() for comparison just in case
   const act = document.querySelector(`input[name="st-activity"][value="${p.activity}"]`);
   if (act) act.checked = true;
   
@@ -203,13 +203,16 @@ function saveProfileSettings() {
   const age = parseInt(document.getElementById('st-age').value);
   const height = parseFloat(document.getElementById('st-height').value);
   const weight = parseFloat(document.getElementById('st-weight').value);
-  const activity = parseFloat(document.querySelector('input[name="st-activity"]:checked').value);
-  const goal = document.querySelector('input[name="st-goal"]:checked').value;
+  const activityInput = document.querySelector('input[name="st-activity"]:checked');
+  const goalInput = document.querySelector('input[name="st-goal"]:checked');
 
-  if (!name || isNaN(age) || isNaN(height) || isNaN(weight)) {
-    alert('請填寫所有必要欄位');
+  if (!name || isNaN(age) || isNaN(height) || isNaN(weight) || !activityInput || !goalInput) {
+    alert('請填寫所有必要欄位並選擇活動量與目標');
     return;
   }
+
+  const activity = parseFloat(activityInput.value);
+  const goal = goalInput.value; // Store as string ("-500", "0", "500") as calcGoalCal uses parseInt()
 
   State.profile = {
     ...State.profile,
