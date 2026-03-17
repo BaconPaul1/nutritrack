@@ -170,7 +170,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v1.7 Loaded");
+  console.log("NutriTrack v1.8 Loaded");
   load();
   if (State.profile) {
     showApp();
@@ -1038,6 +1038,10 @@ function drawWeightChart(weights) {
   const ctx = canvas.getContext('2d');
   const sorted = [...weights].sort((a, b) => a.date.localeCompare(b.date));
   const vals = sorted.map(w => w.kg);
+  const findTime = (d) => new Date(d + 'T12:00:00').getTime();
+  const minT = findTime(sorted[0].date);
+  const maxT = findTime(sorted[sorted.length - 1].date);
+  const timeRange = maxT - minT || 86400000;
 
   // Dynamic scale
   const minV = Math.min(...vals) - 0.5;
@@ -1047,7 +1051,7 @@ function drawWeightChart(weights) {
   const fh = H - pad.t - pad.b;
 
   const pts = sorted.map((w, i) => ({
-    x: pad.l + (i / (sorted.length - 1 || 1)) * fw,
+    x: pad.l + ((findTime(w.date) - minT) / timeRange) * fw,
     y: pad.t + fh - ((w.kg - minV) / (maxV - minV)) * fh,
   }));
 
@@ -1081,11 +1085,17 @@ function drawWeightChart(weights) {
 
   // Dots and Labels (Conditional based on density)
   const showDetail = sorted.length <= 15;
-  const labelStep = Math.ceil(sorted.length / 8);
+  // X-axis labeling logic
+  let lastLabelX = -100;
+  const labelMinGap = 55;
 
   pts.forEach((pt, i) => {
-    // Labels on X-axis (Dates)
-    if (i % labelStep === 0 || i === sorted.length - 1) {
+    const isFirst = (i === 0);
+    const isLast = (i === sorted.length - 1);
+    const spaceOk = (pt.x - lastLabelX) > labelMinGap && (pts[pts.length-1].x - pt.x) > 30;
+
+    if (isFirst || isLast || spaceOk) {
+      lastLabelX = pt.x;
       const d = new Date(sorted[i].date + 'T12:00:00');
       ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center';
       ctx.font = '10px Inter';
