@@ -453,9 +453,15 @@ function buildDiaryHTML(date) {
     { key:'snacks',    label:'點心', icon:'🍎' },
   ];
   return `
-    <div class="page-header">
-      <div class="page-title"><h1>飲食日記 📖</h1><p>記錄每一餐的攝取</p></div>
-      <div class="diary-date-nav">
+    <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
+      <div class="page-title">
+        <h1 style="display:flex; align-items:center; gap:12px; font-size: 24px;">
+          飲食日記 📖
+          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖" style="padding: 4px 10px; font-size: 11px; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2); border-radius: 20px;">📸 AI</button>
+        </h1>
+        <p>記錄每一餐的攝取</p>
+      </div>
+      <div class="diary-date-nav" style="margin-left: auto;">
         <button class="btn-icon" onclick="changeDate(-1)">←</button>
         <span class="date-display">${new Date(date+'T12:00:00').toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'})}</span>
         <button class="btn-icon" onclick="changeDate(1)">→</button>
@@ -1436,6 +1442,11 @@ async function handleAIImage(event) {
     // Show preview
     document.getElementById('ai-img-preview').style.backgroundImage = `url(${base64})`;
     
+    // Predetermine meal if possible
+    if (State.pendingMeal) {
+      document.getElementById('ai-meal-target').value = State.pendingMeal;
+    }
+
     // Call Gemini
     const data = await analyzeFoodImage(base64);
     _aiPendingResults = data.items || [];

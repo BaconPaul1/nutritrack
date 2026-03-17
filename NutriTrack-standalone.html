@@ -724,25 +724,26 @@ input[type="date"] {
   .ring-calories { font-size: 28px; }
 }
 
-/* AI Scan Button */
 .btn-ai-scan {
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
   border: none;
   color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 6px 14px;
+  border-radius: 12px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn-ai-scan:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+  filter: brightness(1.1);
 }
 
 /* Loading Spinner for AI */
@@ -977,7 +978,9 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       <div class="modal-header">
         <h3>🔍 搜尋食物</h3>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-scan" onclick="openBarcodeScanner()" title="掃描條碼">📷 掃描條碼</button>
+          <input type="file" id="ai-camera-input" accept="image/*" capture="environment" style="display:none" onchange="handleAIImage(event)">
+          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖" style="padding: 6px 12px; font-size: 13px;">📸 AI</button>
+          <button class="btn-scan" onclick="openBarcodeScanner()" title="掃描條碼">📷 條碼</button>
           <button class="modal-close" onclick="closeFoodModal()">✕</button>
         </div>
       </div>
@@ -985,27 +988,14 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         <input type="text" id="food-search-input" placeholder="輸入食物名稱..." oninput="searchFoods(this.value)" />
       </div>
       <div id="food-search-results" class="food-results"></div>
-      <div class="modal-divider">
-        <span>或手動新增</span>
-      </div>
-      <div class="page-header" style="justify-content:space-between; display:flex;">
-        <div class="page-title">
-          <h1>飲食日記 📖</h1>
-          <p id="diary-date-display"></p>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <input type="file" id="ai-camera-input" accept="image/*" capture="environment" style="display:none" onchange="handleAIImage(event)">
-          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖">📸 AI</button>
-          <input type="date" id="diary-date-picker" class="date-picker-input" />
-        </div>
-      </div>
       <div class="custom-food-form">
         <h4>自訂食物</h4>
         <div class="form-grid">
           <div class="form-group full">
             <label>食物名稱</label>
             <input type="text" id="cf-name" placeholder="食物名稱" />
-          </div>          </div>
+          </div>
+        </div>
           <div class="form-group">
             <label>蛋白質 (g)</label>
             <input type="number" id="cf-protein" placeholder="0" min="0" step="0.1" />
@@ -1794,9 +1784,15 @@ function buildDiaryHTML(date) {
     { key:'snacks',    label:'點心', icon:'🍎' },
   ];
   return `
-    <div class="page-header">
-      <div class="page-title"><h1>飲食日記 📖</h1><p>記錄每一餐的攝取</p></div>
-      <div class="diary-date-nav">
+    <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
+      <div class="page-title">
+        <h1 style="display:flex; align-items:center; gap:12px; font-size: 24px;">
+          飲食日記 📖
+          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖" style="padding: 4px 10px; font-size: 11px; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2); border-radius: 20px;">📸 AI</button>
+        </h1>
+        <p>記錄每一餐的攝取</p>
+      </div>
+      <div class="diary-date-nav" style="margin-left: auto;">
         <button class="btn-icon" onclick="changeDate(-1)">←</button>
         <span class="date-display">${new Date(date+'T12:00:00').toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'})}</span>
         <button class="btn-icon" onclick="changeDate(1)">→</button>
@@ -2777,6 +2773,11 @@ async function handleAIImage(event) {
     // Show preview
     document.getElementById('ai-img-preview').style.backgroundImage = `url(${base64})`;
     
+    // Predetermine meal if possible
+    if (State.pendingMeal) {
+      document.getElementById('ai-meal-target').value = State.pendingMeal;
+    }
+
     // Call Gemini
     const data = await analyzeFoodImage(base64);
     _aiPendingResults = data.items || [];
