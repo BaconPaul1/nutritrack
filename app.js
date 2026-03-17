@@ -30,14 +30,14 @@ function save() {
 }
 
 function load() {
-  try { State.profile  = JSON.parse(localStorage.getItem('nt_profile')) || null; } catch(e){}
+  try { State.profile = JSON.parse(localStorage.getItem('nt_profile')) || null; } catch (e) { }
   if (State.profile && !State.profile.geminiKey) {
     State.profile.geminiKey = localStorage.getItem('nt_gemini_key') || '';
   }
-  try { State.diary    = JSON.parse(localStorage.getItem('nt_diary'))   || {}; } catch(e){}
-  try { State.exercise = JSON.parse(localStorage.getItem('nt_exercise'))|| {}; } catch(e){}
-  try { State.water    = JSON.parse(localStorage.getItem('nt_water'))   || {}; } catch(e){}
-  try { State.weights  = JSON.parse(localStorage.getItem('nt_weights')) || []; } catch(e){}
+  try { State.diary = JSON.parse(localStorage.getItem('nt_diary')) || {}; } catch (e) { }
+  try { State.exercise = JSON.parse(localStorage.getItem('nt_exercise')) || {}; } catch (e) { }
+  try { State.water = JSON.parse(localStorage.getItem('nt_water')) || {}; } catch (e) { }
+  try { State.weights = JSON.parse(localStorage.getItem('nt_weights')) || []; } catch (e) { }
 }
 
 // ─── Calculations ─────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ function calcExerciseCal(ex, weightKg) {
 
 // ─── Day Data Helpers ─────────────────────────────────────────────────────────
 function getDayDiary(date) {
-  if (!State.diary[date]) State.diary[date] = { breakfast:[], lunch:[], dinner:[], snacks:[] };
+  if (!State.diary[date]) State.diary[date] = { breakfast: [], lunch: [], dinner: [], snacks: [] };
   return State.diary[date];
 }
 function getDayExercise(date) {
@@ -72,14 +72,14 @@ function setDayWater(date, cups) { State.water[date] = cups; save(); }
 
 function sumMacros(entries) {
   return entries.reduce((acc, e) => {
-    acc.kcal    += e.kcal    || 0;
+    acc.kcal += e.kcal || 0;
     acc.protein += e.protein || 0;
-    acc.carbs   += e.carbs   || 0;
-    acc.fat     += e.fat     || 0;
-    acc.fiber   += e.fiber   || 0;
-    acc.sodium  += e.sodium  || 0;
+    acc.carbs += e.carbs || 0;
+    acc.fat += e.fat || 0;
+    acc.fiber += e.fiber || 0;
+    acc.sodium += e.sodium || 0;
     return acc;
-  }, { kcal:0, protein:0, carbs:0, fat:0, fiber:0, sodium:0 });
+  }, { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sodium: 0 });
 }
 
 function getDayTotals(date) {
@@ -97,7 +97,7 @@ function getWeeklyData() {
     const d = new Date(); d.setDate(d.getDate() - i);
     const ds = d.toISOString().slice(0, 10);
     const t = getDayTotals(ds);
-    days.push({ date: ds, label: d.toLocaleDateString('zh-TW',{weekday:'short'}), kcal: t.kcal });
+    days.push({ date: ds, label: d.toLocaleDateString('zh-TW', { weekday: 'short' }), kcal: t.kcal });
   }
   return days;
 }
@@ -125,8 +125,8 @@ let currentStep = 1;
 
 function nextStep(from) {
   if (from === 1) {
-    const name   = document.getElementById('ob-name').value.trim();
-    const age    = parseInt(document.getElementById('ob-age').value);
+    const name = document.getElementById('ob-name').value.trim();
+    const age = parseInt(document.getElementById('ob-age').value);
     const height = parseFloat(document.getElementById('ob-height').value);
     const weight = parseFloat(document.getElementById('ob-weight').value);
     if (!name || !age || !height || !weight) { alert('請填寫所有欄位'); return; }
@@ -144,15 +144,15 @@ function prevStep(from) {
 }
 
 function finishOnboarding() {
-  const sex      = document.querySelector('input[name="ob-sex"]:checked').value;
+  const sex = document.querySelector('input[name="ob-sex"]:checked').value;
   const activity = parseFloat(document.querySelector('input[name="ob-activity"]:checked').value);
-  const goal     = document.querySelector('input[name="ob-goal"]:checked').value;
+  const goal = document.querySelector('input[name="ob-goal"]:checked').value;
   State.profile = {
-    name:     document.getElementById('ob-name').value.trim(),
+    name: document.getElementById('ob-name').value.trim(),
     sex,
-    age:      parseInt(document.getElementById('ob-age').value),
-    height:   parseFloat(document.getElementById('ob-height').value),
-    weight:   parseFloat(document.getElementById('ob-weight').value),
+    age: parseInt(document.getElementById('ob-age').value),
+    height: parseFloat(document.getElementById('ob-height').value),
+    weight: parseFloat(document.getElementById('ob-weight').value),
     activity, goal,
     createdAt: new Date().toISOString(),
   };
@@ -201,7 +201,7 @@ function openSettingsModal() {
     console.error("Profile not found");
     return;
   }
-  
+
   const setVal = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.value = val || '';
@@ -211,7 +211,7 @@ function openSettingsModal() {
   setVal('st-age', p.age);
   setVal('st-height', p.height);
   setVal('st-weight', p.weight);
-  
+
   // Set radio buttons - more robust way using iteration
   const setRadio = (name, value) => {
     const radios = document.querySelectorAll(`input[name="${name}"]`);
@@ -263,7 +263,7 @@ function saveProfileSettings() {
   };
 
   // If weight changed, log it in history if not already there for today
-  const lastW = State.weights[State.weights.length-1];
+  const lastW = State.weights[State.weights.length - 1];
   if (!lastW || lastW.date !== todayStr() || lastW.kg !== weight) {
     State.weights.push({ date: todayStr(), kg: weight });
   }
@@ -298,7 +298,7 @@ function dashboard() {
     <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
       <div class="page-title" style="min-width:0; flex:1;">
         <h1 style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">今日總覽 👋</h1>
-        <p style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'})}</p>
+        <p style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
       <button class="btn-settings-mobile" onclick="openSettingsModal()" title="個人設定" style="flex-shrink:0; min-width: 42px; min-height: 42px; font-size: 20px;">⚙️</button>
     </div>
@@ -354,9 +354,9 @@ function dashboard() {
         <div class="card">
           <div class="card-title">宏量營養素</div>
           <div class="macro-bars">
-            ${macroBar('蛋白質','#f6ad55', totals.protein, macroGoal.protein)}
-            ${macroBar('碳水化合物','#68d391', totals.carbs, macroGoal.carbs)}
-            ${macroBar('脂肪','#76e4f7', totals.fat, macroGoal.fat)}
+            ${macroBar('蛋白質', '#f6ad55', totals.protein, macroGoal.protein)}
+            ${macroBar('碳水化合物', '#68d391', totals.carbs, macroGoal.carbs)}
+            ${macroBar('脂肪', '#76e4f7', totals.fat, macroGoal.fat)}
           </div>
         </div>
         <div class="card">
@@ -365,11 +365,11 @@ function dashboard() {
             <span style="font-size:13px;color:var(--text-primary);font-weight:700">${waterCups} / 8 杯</span>
           </div>
           <div class="water-cups" id="water-cups-grid">
-            ${Array.from({length:8}, (_,i) => `<div class="water-cup ${i < waterCups ? 'filled' : ''}" data-cup="${i+1}" onclick="toggleWater(${i+1})">💧</div>`).join('')}
+            ${Array.from({ length: 8 }, (_, i) => `<div class="water-cup ${i < waterCups ? 'filled' : ''}" data-cup="${i + 1}" onclick="toggleWater(${i + 1})">💧</div>`).join('')}
           </div>
           <div class="water-info" style="margin-top:10px">
             <span>已喝 <strong>${(waterCups * 250)}ml</strong></span>
-            <span>剩餘 <strong>${Math.max(0,(8 - waterCups) * 250)}ml</strong></span>
+            <span>剩餘 <strong>${Math.max(0, (8 - waterCups) * 250)}ml</strong></span>
           </div>
         </div>
       </div>
@@ -449,10 +449,10 @@ function buildDiaryHTML(date) {
   const t = getDayTotals(date);
   const goalCal = calcGoalCal(State.profile);
   const meals = [
-    { key:'breakfast', label:'早餐', icon:'🌅' },
-    { key:'lunch',     label:'午餐', icon:'☀️' },
-    { key:'dinner',    label:'晚餐', icon:'🌙' },
-    { key:'snacks',    label:'點心', icon:'🍎' },
+    { key: 'breakfast', label: '早餐', icon: '🌅' },
+    { key: 'lunch', label: '午餐', icon: '☀️' },
+    { key: 'dinner', label: '晚餐', icon: '🌙' },
+    { key: 'snacks', label: '點心', icon: '🍎' },
   ];
   return `
     <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
@@ -465,7 +465,7 @@ function buildDiaryHTML(date) {
       </div>
       <div class="diary-date-nav" style="margin-left: auto;">
         <button class="btn-icon" onclick="changeDate(-1)">←</button>
-        <span class="date-display">${new Date(date+'T12:00:00').toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'})}</span>
+        <span class="date-display">${new Date(date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
         <button class="btn-icon" onclick="changeDate(1)">→</button>
       </div>
     </div>
@@ -487,7 +487,7 @@ function buildMealSection(meal, entries, date) {
       <span class="meal-title">${meal.icon} ${meal.label}</span>
       <span class="meal-cals">${mCal} 大卡</span>
     </div>
-    ${entries.length ? entries.map((e,i) => `
+    ${entries.length ? entries.map((e, i) => `
       <div class="food-entry">
         <div>
           <div class="food-entry-name">${e.name}</div>
@@ -532,7 +532,7 @@ function searchFoods(query) {
   // Combine built-in + user-added
   const userFoods = JSON.parse(localStorage.getItem('nt_custom_foods') || '[]');
   const allFoods = [...FOOD_DB, ...userFoods];
-  const results  = q ? allFoods.filter(f => f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)) : allFoods.slice(0, 24);
+  const results = q ? allFoods.filter(f => f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q)) : allFoods.slice(0, 24);
   const el = document.getElementById('food-search-results');
   if (!results.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>找不到「${query}」，可嘗試手動新增</p></div>`;
@@ -552,7 +552,7 @@ function searchFoods(query) {
 
 function openServingModal(foodId) {
   const userFoods = JSON.parse(localStorage.getItem('nt_custom_foods') || '[]');
-  const allFoods  = [...FOOD_DB, ...userFoods];
+  const allFoods = [...FOOD_DB, ...userFoods];
   const food = allFoods.find(f => (f.id || f.cid) === foodId);
   if (!food) return;
   State.pendingFood = food;
@@ -585,14 +585,14 @@ function confirmServing() {
   const g = parseFloat(document.getElementById('serving-grams').value) || 0;
   const r = g / 100;
   const entry = {
-    name:    food.name,
-    grams:   g,
-    kcal:    Math.round(food.per100g.kcal    * r),
+    name: food.name,
+    grams: g,
+    kcal: Math.round(food.per100g.kcal * r),
     protein: parseFloat((food.per100g.protein * r).toFixed(1)),
-    carbs:   parseFloat((food.per100g.carbs   * r).toFixed(1)),
-    fat:     parseFloat((food.per100g.fat     * r).toFixed(1)),
-    fiber:   parseFloat(((food.per100g.fiber||0)*r).toFixed(1)),
-    sodium:  parseFloat(((food.per100g.sodium||0)*r).toFixed(0)),
+    carbs: parseFloat((food.per100g.carbs * r).toFixed(1)),
+    fat: parseFloat((food.per100g.fat * r).toFixed(1)),
+    fiber: parseFloat(((food.per100g.fiber || 0) * r).toFixed(1)),
+    sodium: parseFloat(((food.per100g.sodium || 0) * r).toFixed(0)),
   };
   getDayDiary(State.currentDate)[meal].push(entry);
   save();
@@ -621,7 +621,7 @@ function addCustomFood() {
   const custom = JSON.parse(localStorage.getItem('nt_custom_foods') || '[]');
   custom.push(food);
   localStorage.setItem('nt_custom_foods', JSON.stringify(custom));
-  ['cf-name','cf-kcal','cf-protein','cf-carbs','cf-fat'].forEach(id => document.getElementById(id).value = '');
+  ['cf-name', 'cf-kcal', 'cf-protein', 'cf-carbs', 'cf-fat'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cf-serving').value = '100';
   State.pendingFood = food;
   updateServingPreview();
@@ -634,7 +634,7 @@ function exercise() {
   const el = document.createElement('div');
   el.className = 'page';
   const logs = getDayExercise(State.currentDate);
-  const totalBurned = logs.reduce((s,e) => s + (e.burned||0), 0);
+  const totalBurned = logs.reduce((s, e) => s + (e.burned || 0), 0);
   el.innerHTML = `
     <div class="page-header">
       <div class="page-title"><h1>運動記錄 🏋️</h1><p>追蹤有氧與肌力訓練</p></div>
@@ -651,9 +651,9 @@ function exercise() {
       <div class="card-title" style="display:flex;justify-content:space-between">
         <span>今日運動總計</span><span style="color:var(--accent-green);font-weight:700">${totalBurned} 大卡消耗</span>
       </div>
-      ${logs.map((l,i) => `<div class="exercise-log-entry">
+      ${logs.map((l, i) => `<div class="exercise-log-entry">
         <div>
-          <div style="font-size:14px;font-weight:600">${l.icon||'🏃'} ${l.name}</div>
+          <div style="font-size:14px;font-weight:600">${l.icon || '🏃'} ${l.name}</div>
           <div style="font-size:12px;color:var(--text-secondary)">${l.type === 'cardio' ? `${l.duration} 分鐘` : `${l.sets}組 × ${l.reps}次 × ${l.weight}kg`}</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
@@ -694,13 +694,13 @@ function buildStrengthPanel() {
 function buildLogPanel() {
   const logs = getDayExercise(State.currentDate);
   if (!logs.length) return `<div class="empty-state"><div class="empty-icon">🏋️</div><p>今天還沒有運動記錄</p></div>`;
-  const total = logs.reduce((s,e) => s + (e.burned||0), 0);
+  const total = logs.reduce((s, e) => s + (e.burned || 0), 0);
   return `<div class="card" style="padding:0;overflow:hidden">
-    ${logs.map((l,i) => `<div class="exercise-log-entry">
-      <div><div style="font-size:14px;font-weight:600">${l.icon||'🏃'} ${l.name}</div>
-      <div style="font-size:12px;color:var(--text-secondary)">${l.type==='cardio'?`${l.duration}分鐘`:`${l.sets}組 × ${l.reps}次 × ${l.weight}kg`}</div></div>
+    ${logs.map((l, i) => `<div class="exercise-log-entry">
+      <div><div style="font-size:14px;font-weight:600">${l.icon || '🏃'} ${l.name}</div>
+      <div style="font-size:12px;color:var(--text-secondary)">${l.type === 'cardio' ? `${l.duration}分鐘` : `${l.sets}組 × ${l.reps}次 × ${l.weight}kg`}</div></div>
       <div style="display:flex;gap:12px;align-items:center">
-        ${l.burned?`<span style="font-size:14px;font-weight:700;color:var(--accent-green)">-${l.burned} 大卡</span>`:`<span class="badge badge-teal">肌力</span>`}
+        ${l.burned ? `<span style="font-size:14px;font-weight:700;color:var(--accent-green)">-${l.burned} 大卡</span>` : `<span class="badge badge-teal">肌力</span>`}
         <button class="btn-icon" onclick="removeExercise(${i})" style="width:28px;height:28px;font-size:12px">✕</button>
       </div>
     </div>`).join('')}
@@ -739,7 +739,7 @@ function openCardioForm(id) {
       </div>
     </div>
   `;
-  document.getElementById('ex-dur').addEventListener('input', function() {
+  document.getElementById('ex-dur').addEventListener('input', function () {
     const kcal = Math.round(ex.met * State.profile.weight * (this.value / 60));
     document.getElementById('ex-cal-preview').textContent = `預計消耗：${kcal} 大卡`;
   });
@@ -775,10 +775,10 @@ function openStrengthForm(id) {
 }
 
 function logStrength(id) {
-  const ex   = EXERCISE_DB.find(e => e.id === id);
-  const sets  = parseInt(document.getElementById('ex-sets').value) || 3;
-  const reps  = parseInt(document.getElementById('ex-reps').value) || 10;
-  const wt    = parseFloat(document.getElementById('ex-weight').value) || 0;
+  const ex = EXERCISE_DB.find(e => e.id === id);
+  const sets = parseInt(document.getElementById('ex-sets').value) || 3;
+  const reps = parseInt(document.getElementById('ex-reps').value) || 10;
+  const wt = parseFloat(document.getElementById('ex-weight').value) || 0;
   getDayExercise(State.currentDate).push({ ...ex, sets, reps, weight: wt, burned: 0 });
   save();
   navigate('exercise');
@@ -796,9 +796,9 @@ function nutrition() {
   el.className = 'page';
   const t = getDayTotals(State.currentDate);
   const total = t.kcal || 1;
-  const pPct  = Math.round((t.protein * 4 / total) * 100) || 0;
-  const cPct  = Math.round((t.carbs   * 4 / total) * 100) || 0;
-  const fPct  = Math.round((t.fat     * 9 / total) * 100) || 0;
+  const pPct = Math.round((t.protein * 4 / total) * 100) || 0;
+  const cPct = Math.round((t.carbs * 4 / total) * 100) || 0;
+  const fPct = Math.round((t.fat * 9 / total) * 100) || 0;
   const weekly = getWeeklyData();
 
   el.innerHTML = `
@@ -842,7 +842,7 @@ function nutrition() {
 }
 
 function progressBarHTML(val, max, color) {
-  const pct = Math.min((val/max)*100, 100).toFixed(0);
+  const pct = Math.min((val / max) * 100, 100).toFixed(0);
   return `<div class="progress-bar" style="height:4px"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>`;
 }
 
@@ -852,9 +852,9 @@ function drawPie(p, c, f) {
   const ctx = canvas.getContext('2d');
   const total = p + c + f || 1;
   const data = [
-    { pct: p/total, color: '#f6ad55' },
-    { pct: c/total, color: '#68d391' },
-    { pct: f/total, color: '#76e4f7' },
+    { pct: p / total, color: '#f6ad55' },
+    { pct: c / total, color: '#68d391' },
+    { pct: f / total, color: '#76e4f7' },
   ];
   const cx = 80, cy = 80, r = 65;
   ctx.clearRect(0, 0, 160, 160);
@@ -867,12 +867,12 @@ function drawPie(p, c, f) {
     angle += sweep;
   });
   // Center hole
-  ctx.beginPath(); ctx.arc(cx, cy, 36, 0, 2*Math.PI);
+  ctx.beginPath(); ctx.arc(cx, cy, 36, 0, 2 * Math.PI);
   ctx.fillStyle = '#0d0f14'; ctx.fill();
   if (p === 0 && c === 0 && f === 0) {
     ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2*Math.PI); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx, cy, 36, 0, 2*Math.PI);
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, 36, 0, 2 * Math.PI);
     ctx.fillStyle = '#0d0f14'; ctx.fill();
   }
 }
@@ -885,7 +885,7 @@ function drawWeeklyChart(data) {
   canvas.width = W; canvas.height = 200;
   const maxK = Math.max(...data.map(d => d.kcal), 100);
   const goalCal = calcGoalCal(State.profile);
-  const pad = { t:20, r:20, b:40, l:50 };
+  const pad = { t: 20, r: 20, b: 40, l: 50 };
   const fw = W - pad.l - pad.r;
   const fh = 200 - pad.t - pad.b;
   const bw = fw / data.length;
@@ -913,10 +913,10 @@ function drawWeeklyChart(data) {
     ctx.fill();
     // Label
     ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
-    ctx.fillText(d.label, x + bwInner/2, 200 - pad.b + 14);
+    ctx.fillText(d.label, x + bwInner / 2, 200 - pad.b + 14);
     if (d.kcal > 0) {
       ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '10px Inter';
-      ctx.fillText(d.kcal, x + bwInner/2, y - 4);
+      ctx.fillText(d.kcal, x + bwInner / 2, y - 4);
     }
   });
 }
@@ -929,20 +929,20 @@ function progress() {
   const bmr = calcBMR(p);
   const tdee = calcTDEE(p);
   const goalCal = calcGoalCal(p);
-  
+
   // Filtering logic
-  let weights = [...State.weights].sort((a,b) => a.date.localeCompare(b.date));
+  let weights = [...State.weights].sort((a, b) => a.date.localeCompare(b.date));
   const now = new Date();
   if (State.weightPeriod !== 'ALL') {
-    const days = { '1W':7, '1M':30, '3M':90, '6M':180, '1Y':365 }[State.weightPeriod];
+    const days = { '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365 }[State.weightPeriod];
     const cutoff = new Date();
     cutoff.setDate(now.getDate() - days);
     weights = weights.filter(w => new Date(w.date) >= cutoff);
   }
 
   const periods = [
-    {id:'1W', lbl:'1週'}, {id:'1M', lbl:'1個月'}, {id:'3M', lbl:'3個月'},
-    {id:'6M', lbl:'6個月'}, {id:'1Y', lbl:'1年'}, {id:'ALL', lbl:'全部'}
+    { id: '1W', lbl: '1週' }, { id: '1M', lbl: '1個月' }, { id: '3M', lbl: '3個月' },
+    { id: '6M', lbl: '6個月' }, { id: '1Y', lbl: '1年' }, { id: 'ALL', lbl: '全部' }
   ];
 
   el.innerHTML = `
@@ -974,11 +974,11 @@ function progress() {
     <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
       <div style="padding:14px 18px;border-bottom:1px solid var(--border)"><span class="card-title" style="margin:0">體重記錄歷史</span></div>
       <div style="max-height: 300px; overflow-y: auto;">
-        ${State.weights.length ? [...State.weights].sort((a,b)=>b.date.localeCompare(a.date)).map((w,i,arr) => {
-          const prev = arr[i+1];
-          const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
-          return `<div class="weight-entry">
-            <span class="weight-date">${new Date(w.date+'T12:00:00').toLocaleDateString('zh-TW',{month:'short',day:'numeric'})}</span>
+        ${State.weights.length ? [...State.weights].sort((a, b) => b.date.localeCompare(a.date)).map((w, i, arr) => {
+    const prev = arr[i + 1];
+    const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
+    return `<div class="weight-entry">
+            <span class="weight-date">${new Date(w.date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
             <div>
               <span class="weight-val">${w.kg} kg</span>
               ${diff !== null ? `<span class="weight-diff" style="color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
@@ -986,7 +986,7 @@ function progress() {
               </span>` : ''}
             </div>
           </div>`;
-        }).join('') : `<div class="empty-state"><div class="empty-icon">⚖️</div><p>尚無體重記錄</p></div>`}
+  }).join('') : `<div class="empty-state"><div class="empty-icon">⚖️</div><p>尚無體重記錄</p></div>`}
       </div>
     </div>
 
@@ -1016,13 +1016,13 @@ function setWeightPeriod(p) {
 
 function logWeight() {
   const date = document.getElementById('w-date').value;
-  const kg   = parseFloat(document.getElementById('w-kg').value);
+  const kg = parseFloat(document.getElementById('w-kg').value);
   if (!date || !kg || kg < 20 || kg > 300) { alert('請輸入有效的體重值'); return; }
   // Remove existing entry for same date
   State.weights = State.weights.filter(w => w.date !== date);
   State.weights.push({ date, kg });
   // Update profile weight to latest
-  const latest = [...State.weights].sort((a,b) => b.date.localeCompare(a.date))[0];
+  const latest = [...State.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
   if (latest) State.profile.weight = latest.kg;
   save();
   navigate('progress');
@@ -1035,16 +1035,16 @@ function drawWeightChart(weights) {
   const H = canvas.getAttribute('height') || 220;
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
-  const sorted = [...weights].sort((a,b) => a.date.localeCompare(b.date));
+  const sorted = [...weights].sort((a, b) => a.date.localeCompare(b.date));
   const vals = sorted.map(w => w.kg);
-  
+
   // Dynamic scale
   const minV = Math.min(...vals) - 0.5;
   const maxV = Math.max(...vals) + 0.5;
-  const pad = { t:30, r:30, b:40, l:50 };
+  const pad = { t: 30, r: 30, b: 40, l: 50 };
   const fw = W - pad.l - pad.r;
   const fh = H - pad.t - pad.b;
-  
+
   const pts = sorted.map((w, i) => ({
     x: pad.l + (i / (sorted.length - 1 || 1)) * fw,
     y: pad.t + fh - ((w.kg - minV) / (maxV - minV)) * fh,
@@ -1053,12 +1053,12 @@ function drawWeightChart(weights) {
   // Background Grid
   ctx.strokeStyle = 'rgba(255,255,255,0.05)';
   ctx.lineWidth = 1;
-  for(let i=0; i<=4; i++) {
-    const y = pad.t + (fh/4)*i;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (fh / 4) * i;
     ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
     // Y-axis labels
     ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
-    const val = maxV - ((maxV-minV)/4)*i;
+    const val = maxV - ((maxV - minV) / 4) * i;
     ctx.fillText(val.toFixed(1), pad.l - 10, y + 3);
   }
 
@@ -1068,7 +1068,7 @@ function drawWeightChart(weights) {
   grad.addColorStop(1, 'rgba(56,178,172,0)');
   ctx.beginPath();
   pts.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
-  ctx.lineTo(pts[pts.length-1].x, pad.t + fh);
+  ctx.lineTo(pts[pts.length - 1].x, pad.t + fh);
   ctx.lineTo(pts[0].x, pad.t + fh);
   ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
 
@@ -1088,15 +1088,15 @@ function drawWeightChart(weights) {
       const d = new Date(sorted[i].date + 'T12:00:00');
       ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center';
       ctx.font = '10px Inter';
-      ctx.fillText(`${d.getMonth()+1}/${d.getDate()}`, pt.x, H - 15);
+      ctx.fillText(`${d.getMonth() + 1}/${d.getDate()}`, pt.x, H - 15);
     }
 
     // Dots and weight values
     if (showDetail) {
-      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, 2*Math.PI);
-      ctx.fillStyle = '#141720'; ctx.fill(); 
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = '#141720'; ctx.fill();
       ctx.strokeStyle = '#38b2ac'; ctx.lineWidth = 2; ctx.stroke();
-      
+
       ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 11px Inter';
       ctx.fillText(sorted[i].kg, pt.x, pt.y - 12);
     }
@@ -1106,12 +1106,12 @@ function drawWeightChart(weights) {
 // ─── BARCODE SCANNER ──────────────────────────────────────────────────────────
 let _html5QrScanner = null;
 let _scannedBarcode = null;
-let _barcodeFood    = null;
+let _barcodeFood = null;
 
 function openBarcodeScanner() {
   closeFoodModal();
   _scannedBarcode = null;
-  _barcodeFood    = null;
+  _barcodeFood = null;
 
   const modal = document.getElementById('barcode-modal');
   modal.classList.remove('hidden');
@@ -1129,7 +1129,7 @@ function openBarcodeScanner() {
       { facingMode: 'environment' },
       { fps: 10, qrbox: { width: 260, height: 160 } },
       onBarcodeDetected,
-      () => {}
+      () => { }
     ).then(() => {
       document.getElementById('barcode-status').textContent = '📷 請將鏡頭對準食品包裝上的條碼…';
     }).catch(err => {
@@ -1142,7 +1142,7 @@ function openBarcodeScanner() {
 function closeBarcodeScanner() {
   document.getElementById('barcode-modal').classList.add('hidden');
   if (_html5QrScanner) {
-    _html5QrScanner.stop().catch(() => {});
+    _html5QrScanner.stop().catch(() => { });
     _html5QrScanner = null;
   }
 }
@@ -1152,12 +1152,12 @@ async function onBarcodeDetected(decodedText) {
   _scannedBarcode = decodedText;
 
   if (_html5QrScanner) {
-    await _html5QrScanner.stop().catch(() => {});
+    await _html5QrScanner.stop().catch(() => { });
     _html5QrScanner = null;
   }
 
-  const statusEl   = document.getElementById('barcode-status');
-  const resultEl   = document.getElementById('barcode-result');
+  const statusEl = document.getElementById('barcode-status');
+  const resultEl = document.getElementById('barcode-result');
   const notFoundEl = document.getElementById('barcode-not-found');
 
   statusEl.textContent = `條碼：${decodedText}　正在查詢 Open Food Facts 資料庫…`;
@@ -1165,8 +1165,8 @@ async function onBarcodeDetected(decodedText) {
   notFoundEl.classList.add('hidden');
 
   try {
-    const url  = `https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`;
-    const res  = await fetch(url);
+    const url = `https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`;
+    const res = await fetch(url);
     const data = await res.json();
 
     if (data.status !== 1 || !data.product) {
@@ -1178,10 +1178,10 @@ async function onBarcodeDetected(decodedText) {
     const p = data.product;
     const n = p.nutriments || {};
     const servingG = parseFloat(p.serving_quantity) || 100;
-    const scale    = 100 / servingG;
+    const scale = 100 / servingG;
 
     const get100g = (key100, keyServ, fallback = 0) => {
-      if (n[key100]  != null) return parseFloat(n[key100])  || fallback;
+      if (n[key100] != null) return parseFloat(n[key100]) || fallback;
       if (n[keyServ] != null) return parseFloat(n[keyServ]) * scale || fallback;
       return fallback;
     };
@@ -1191,12 +1191,12 @@ async function onBarcodeDetected(decodedText) {
       name: p.product_name || p.product_name_en || p.generic_name || `條碼 ${decodedText}`,
       category: (p.categories_tags?.[0] || '').replace(/^en:/, '') || '掃描食品',
       per100g: {
-        kcal:    Math.round(get100g('energy-kcal_100g', 'energy-kcal_serving')),
-        protein: parseFloat(get100g('proteins_100g',       'proteins_serving').toFixed(1)),
-        carbs:   parseFloat(get100g('carbohydrates_100g',  'carbohydrates_serving').toFixed(1)),
-        fat:     parseFloat(get100g('fat_100g',            'fat_serving').toFixed(1)),
-        fiber:   parseFloat(get100g('fiber_100g',          'fiber_serving').toFixed(1)),
-        sodium:  parseFloat((get100g('sodium_100g', 'sodium_serving') * 1000).toFixed(0)),
+        kcal: Math.round(get100g('energy-kcal_100g', 'energy-kcal_serving')),
+        protein: parseFloat(get100g('proteins_100g', 'proteins_serving').toFixed(1)),
+        carbs: parseFloat(get100g('carbohydrates_100g', 'carbohydrates_serving').toFixed(1)),
+        fat: parseFloat(get100g('fat_100g', 'fat_serving').toFixed(1)),
+        fiber: parseFloat(get100g('fiber_100g', 'fiber_serving').toFixed(1)),
+        sodium: parseFloat((get100g('sodium_100g', 'sodium_serving') * 1000).toFixed(0)),
       }
     };
 
@@ -1227,7 +1227,7 @@ function addBarcodeFood() {
 
 // ─── MY FOODS LIBRARY PAGE ────────────────────────────────────────────────────
 function getCustomFoods() {
-  try { return JSON.parse(localStorage.getItem('nt_custom_foods') || '[]'); } catch(e) { return []; }
+  try { return JSON.parse(localStorage.getItem('nt_custom_foods') || '[]'); } catch (e) { return []; }
 }
 function saveCustomFoods(list) {
   localStorage.setItem('nt_custom_foods', JSON.stringify(list));
@@ -1302,11 +1302,11 @@ function buildMyFoodsHTML(filter) {
           onfocus="this.style.borderColor='var(--accent-teal)'" onblur="this.style.borderColor='var(--border)'" />
       </div>
       ${shown.length === 0
-        ? `<div class="empty-state"><div class="empty-icon">🍱</div>
+      ? `<div class="empty-state"><div class="empty-icon">🍱</div>
            <p>${q ? `找不到「${filter}」相關的食物` : '還沒有自訂食物，在上方新增吧！'}</p></div>`
-        : shown.map(f => {
-            const realIdx = foods.indexOf(f);
-            return `<div class="food-entry" style="align-items:flex-start;padding:14px 18px">
+      : shown.map(f => {
+        const realIdx = foods.indexOf(f);
+        return `<div class="food-entry" style="align-items:flex-start;padding:14px 18px">
               <div style="flex:1;min-width:0">
                 <div class="food-entry-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                   ${f.name}
@@ -1325,8 +1325,8 @@ function buildMyFoodsHTML(filter) {
                 <button class="btn-ghost" onclick="deleteMfFood(${realIdx})">🗑️</button>
               </div>
             </div>`;
-          }).join('')
-      }
+      }).join('')
+    }
     </div>
   `;
 }
@@ -1336,7 +1336,7 @@ function refilterMf(val) {
 }
 
 function clearMfForm() {
-  ['mf-name','mf-kcal','mf-protein','mf-carbs','mf-fat','mf-fiber','mf-sodium','mf-category']
+  ['mf-name', 'mf-kcal', 'mf-protein', 'mf-carbs', 'mf-fat', 'mf-fiber', 'mf-sodium', 'mf-category']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const nameEl = document.getElementById('mf-name');
   if (nameEl) nameEl.dataset.editIdx = '-1';
@@ -1347,16 +1347,16 @@ function clearMfForm() {
 }
 
 function saveMfFood() {
-  const nameEl    = document.getElementById('mf-name');
-  const name      = (nameEl?.value || '').trim();
-  const kcal      = parseFloat(document.getElementById('mf-kcal').value)    || 0;
-  const protein   = parseFloat(document.getElementById('mf-protein').value) || 0;
-  const carbs     = parseFloat(document.getElementById('mf-carbs').value)   || 0;
-  const fat       = parseFloat(document.getElementById('mf-fat').value)     || 0;
-  const fiber     = parseFloat(document.getElementById('mf-fiber').value)   || 0;
-  const sodium    = parseFloat(document.getElementById('mf-sodium').value)  || 0;
-  const category  = (document.getElementById('mf-category').value || '').trim() || '自訂';
-  const editIdx   = parseInt(nameEl?.dataset.editIdx ?? '-1');
+  const nameEl = document.getElementById('mf-name');
+  const name = (nameEl?.value || '').trim();
+  const kcal = parseFloat(document.getElementById('mf-kcal').value) || 0;
+  const protein = parseFloat(document.getElementById('mf-protein').value) || 0;
+  const carbs = parseFloat(document.getElementById('mf-carbs').value) || 0;
+  const fat = parseFloat(document.getElementById('mf-fat').value) || 0;
+  const fiber = parseFloat(document.getElementById('mf-fiber').value) || 0;
+  const sodium = parseFloat(document.getElementById('mf-sodium').value) || 0;
+  const category = (document.getElementById('mf-category').value || '').trim() || '自訂';
+  const editIdx = parseInt(nameEl?.dataset.editIdx ?? '-1');
 
   if (!name) { alert('請輸入食物名稱'); return; }
   if (!kcal) { alert('請輸入熱量（不可為 0）'); return; }
@@ -1443,7 +1443,7 @@ async function handleAIImage(event) {
     const base64 = await fileToBase64(file);
     // Show preview
     document.getElementById('ai-img-preview').style.backgroundImage = `url(${base64})`;
-    
+
     // Predetermine meal if possible
     if (State.pendingMeal) {
       document.getElementById('ai-meal-target').value = State.pendingMeal;
@@ -1452,10 +1452,10 @@ async function handleAIImage(event) {
     // Call Gemini
     const data = await analyzeFoodImage(base64);
     _aiPendingResults = data.items || [];
-    
+
     // Render results
     renderAIResults(_aiPendingResults);
-    
+
     loading.classList.add('hidden');
     results.classList.remove('hidden');
   } catch (err) {
@@ -1479,11 +1479,11 @@ function fileToBase64(file) {
 async function analyzeFoodImage(base64) {
   const apiKey = State.profile.geminiKey;
   const prompt = "您是一位精確的營養師。請分析這張照片中的食物。估算每種食物的名稱、大概重量(g)、熱量(kcal)、蛋白質(g)、碳水(g)、脂肪(g)。請務必僅以 JSON 格式回傳，格式如下：{\"items\": [{\"name\":\"食物名\",\"weight\":150, \"kcal\":200, \"protein\":15, \"carbs\":20, \"fat\":5}]}";
-  
+
   // Strip metadata prefix if present
   const base64Data = base64.split(',')[1];
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1499,7 +1499,7 @@ async function analyzeFoodImage(base64) {
 
   const json = await response.json();
   if (json.error) throw new Error(json.error.message);
-  
+
   const text = json.candidates[0].content.parts[0].text;
   const cleanText = text.replace(/```json|```/g, "").trim();
   return JSON.parse(cleanText);
@@ -1522,8 +1522,8 @@ function renderAIResults(items) {
   document.getElementById('btn-ai-confirm').onclick = () => {
     const meal = document.getElementById('ai-meal-target').value;
     const date = State.currentDate;
-    if (!State.diary[date]) State.diary[date] = { breakfast:[], lunch:[], dinner:[], snacks:[] };
-    
+    if (!State.diary[date]) State.diary[date] = { breakfast: [], lunch: [], dinner: [], snacks: [] };
+
     items.forEach(it => {
       State.diary[date][meal].push({
         name: it.name,
@@ -1535,7 +1535,7 @@ function renderAIResults(items) {
         unit: '份'
       });
     });
-    
+
     save();
     document.getElementById('ai-modal').classList.add('hidden');
     navigate('diary');
