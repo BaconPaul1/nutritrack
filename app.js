@@ -173,7 +173,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.0 Loaded (History Management)");
+  console.log("NutriTrack v2.2 Loaded (Photo Fix)");
   load();
   if (State.profile) {
     showApp();
@@ -1034,9 +1034,9 @@ function setWeightPeriod(p) {
 function logWeight() {
   const date = document.getElementById('w-date').value;
   const kg = parseFloat(document.getElementById('w-kg').value);
-  
+
   if (!date || !kg || kg < 20 || kg > 300) { alert('請輸入有效的體重值'); return; }
-  
+
   // Future date check
   if (new Date(date) > new Date()) {
     alert('無法記錄未來的體重，請選擇今天或過去的日期。');
@@ -1108,15 +1108,16 @@ async function handleProgressPhotoUpload(e) {
   const file = e.target.files[0];
   if (!file || !currentPhotoDate) return;
 
+  const targetDate = currentPhotoDate; // Capture before finally clears it
   try {
     const base64 = await compressProgressPhoto(file);
     const request = indexedDB.open('nt_photos_db', 1);
     request.onsuccess = (ev) => {
       const db = ev.target.result;
       const tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put({ date: currentPhotoDate, data: base64 });
+      tx.objectStore('photos').put({ date: targetDate, data: base64 });
       tx.oncomplete = () => {
-        State.hasPhotos.add(currentPhotoDate);
+        State.hasPhotos.add(targetDate);
         save();
         navigate('progress');
         alert('照片已成功保存至本地！');
@@ -1127,7 +1128,8 @@ async function handleProgressPhotoUpload(e) {
     alert('保存相片失敗');
   } finally {
     e.target.value = '';
-    currentPhotoDate = null;
+    // currentPhotoDate will be cleared by the next capture call or reset here
+    // but targetDate is safe in the closure
   }
 }
 
@@ -1254,7 +1256,7 @@ function drawWeightChart(weights) {
   pts.forEach((pt, i) => {
     const isFirst = (i === 0);
     const isLast = (i === sorted.length - 1);
-    const spaceOk = (pt.x - lastLabelX) > labelMinGap && (pts[pts.length-1].x - pt.x) > 30;
+    const spaceOk = (pt.x - lastLabelX) > labelMinGap && (pts[pts.length - 1].x - pt.x) > 30;
 
     if (isFirst || isLast || spaceOk) {
       lastLabelX = pt.x;

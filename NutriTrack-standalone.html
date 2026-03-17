@@ -919,26 +919,27 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       </div>
       <ul class="nav-links">
         <li><a href="#" data-page="dashboard" id="nav-dashboard" class="nav-link active">
-          <span class="nav-icon">🏠</span><span>今日總覽</span>
-        </a></li>
+            <span class="nav-icon">🏠</span><span>今日總覽</span>
+          </a></li>
         <li><a href="#" data-page="diary" id="nav-diary" class="nav-link">
-          <span class="nav-icon">📖</span><span>飲食日記</span>
-        </a></li>
+            <span class="nav-icon">📖</span><span>飲食日記</span>
+          </a></li>
         <li><a href="#" data-page="exercise" id="nav-exercise" class="nav-link">
-          <span class="nav-icon">🏋️</span><span>運動記錄</span>
-        </a></li>
+            <span class="nav-icon">🏋️</span><span>運動記錄</span>
+          </a></li>
         <li><a href="#" data-page="nutrition" id="nav-nutrition" class="nav-link">
-          <span class="nav-icon">📊</span><span>營養分析</span>
-        </a></li>
+            <span class="nav-icon">📊</span><span>營養分析</span>
+          </a></li>
         <li><a href="#" data-page="progress" id="nav-progress" class="nav-link">
-          <span class="nav-icon">⚖️</span><span>體重進度</span>
-        </a></li>
+            <span class="nav-icon">⚖️</span><span>體重進度</span>
+          </a></li>
         <li><a href="#" data-page="myfoods" id="nav-myfoods" class="nav-link">
-          <span class="nav-icon">🗂️</span><span>我的食物庫</span>
-        </a></li>
+            <span class="nav-icon">🗂️</span><span>我的食物庫</span>
+          </a></li>
       </ul>
       <div class="sidebar-footer">
-        <button id="settings-btn-desktop" class="btn-reset" onclick="openSettingsModal()" style="background:rgba(56,178,172,0.1);color:var(--accent-teal);border-color:rgba(56,178,172,0.3)">
+        <button id="settings-btn-desktop" class="btn-reset" onclick="openSettingsModal()"
+          style="background:rgba(56,178,172,0.1);color:var(--accent-teal);border-color:rgba(56,178,172,0.3)">
           <span>⚙️</span> 個人設定
         </button>
       </div>
@@ -979,8 +980,10 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       <div class="modal-header">
         <h3>🔍 搜尋食物</h3>
         <div style="display:flex;gap:8px;align-items:center">
-          <input type="file" id="ai-camera-input" accept="image/*" capture="environment" style="display:none" onchange="handleAIImage(event)">
-          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖" style="padding: 6px 12px; font-size: 13px;">📸 AI</button>
+          <input type="file" id="ai-camera-input" accept="image/*" capture="environment" style="display:none"
+            onchange="handleAIImage(event)">
+          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖"
+            style="padding: 6px 12px; font-size: 13px;">📸 AI</button>
           <button class="btn-scan" onclick="openBarcodeScanner()" title="掃描條碼">📷 條碼</button>
           <button class="modal-close" onclick="closeFoodModal()">✕</button>
         </div>
@@ -997,26 +1000,26 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
             <input type="text" id="cf-name" placeholder="食物名稱" />
           </div>
         </div>
-          <div class="form-group">
-            <label>蛋白質 (g)</label>
-            <input type="number" id="cf-protein" placeholder="0" min="0" step="0.1" />
-          </div>
-          <div class="form-group">
-            <label>碳水 (g)</label>
-            <input type="number" id="cf-carbs" placeholder="0" min="0" step="0.1" />
-          </div>
-          <div class="form-group">
-            <label>脂肪 (g)</label>
-            <input type="number" id="cf-fat" placeholder="0" min="0" step="0.1" />
-          </div>
-          <div class="form-group">
-            <label>份量 (g)</label>
-            <input type="number" id="cf-serving" placeholder="100" min="1" value="100" />
-          </div>
+        <div class="form-group">
+          <label>蛋白質 (g)</label>
+          <input type="number" id="cf-protein" placeholder="0" min="0" step="0.1" />
         </div>
-        <button class="btn-primary" onclick="addCustomFood()">新增自訂食物</button>
+        <div class="form-group">
+          <label>碳水 (g)</label>
+          <input type="number" id="cf-carbs" placeholder="0" min="0" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label>脂肪 (g)</label>
+          <input type="number" id="cf-fat" placeholder="0" min="0" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label>份量 (g)</label>
+          <input type="number" id="cf-serving" placeholder="100" min="1" value="100" />
+        </div>
       </div>
+      <button class="btn-primary" onclick="addCustomFood()">新增自訂食物</button>
     </div>
+  </div>
   </div>
 
   <!-- Serving Size Modal -->
@@ -1049,8 +1052,10 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       <div style="padding:16px 24px">
         <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">將相機對準食品包裝上的條碼（EAN / UPC）</p>
         <div id="barcode-reader" style="width:100%;border-radius:var(--radius-md);overflow:hidden"></div>
-        <div id="barcode-status" style="margin-top:14px;text-align:center;font-size:13px;color:var(--text-secondary)">等待相機啟動…</div>
-        <div id="barcode-result" class="hidden" style="margin-top:14px;background:rgba(56,178,172,0.08);border:1px solid rgba(56,178,172,0.25);border-radius:var(--radius-md);padding:16px">
+        <div id="barcode-status" style="margin-top:14px;text-align:center;font-size:13px;color:var(--text-secondary)">
+          等待相機啟動…</div>
+        <div id="barcode-result" class="hidden"
+          style="margin-top:14px;background:rgba(56,178,172,0.08);border:1px solid rgba(56,178,172,0.25);border-radius:var(--radius-md);padding:16px">
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">找到食品：</div>
           <div id="barcode-food-name" style="font-size:17px;font-weight:700;margin-bottom:4px"></div>
           <div id="barcode-food-macro" style="font-size:13px;color:var(--text-secondary)"></div>
@@ -1058,7 +1063,7 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         </div>
         <div id="barcode-not-found" class="hidden" style="margin-top:14px;text-align:center">
           <div style="font-size:32px;margin-bottom:8px">😕</div>
-          <p style="font-size:14px;color:var(--text-secondary)">找不到此條碼，請嘗試手動搜尋<br/>或新增自訂食物</p>
+          <p style="font-size:14px;color:var(--text-secondary)">找不到此條碼，請嘗試手動搜尋<br />或新增自訂食物</p>
         </div>
       </div>
     </div>
@@ -1187,7 +1192,9 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         <p style="margin-top:20px; color:var(--text-secondary)">正在識別相片中的食物並估算熱量...</p>
       </div>
       <div id="ai-results-state" class="modal-body hidden">
-        <div id="ai-img-preview" style="width:100%; height:200px; border-radius:12px; background-size:cover; background-position:center; margin-bottom:16px"></div>
+        <div id="ai-img-preview"
+          style="width:100%; height:200px; border-radius:12px; background-size:cover; background-position:center; margin-bottom:16px">
+        </div>
         <div id="ai-food-list" style="margin-bottom:20px">
           <!-- AI Results will be injected here -->
         </div>
@@ -1202,7 +1209,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         </div>
         <div style="display:flex; gap:12px; margin-top:24px">
           <button id="btn-ai-confirm" class="btn-primary" style="flex:1">加入日記</button>
-          <button class="btn-secondary" onclick="document.getElementById('ai-modal').classList.add('hidden')" style="flex:1">取消</button>
+          <button class="btn-secondary" onclick="document.getElementById('ai-modal').classList.add('hidden')"
+            style="flex:1">取消</button>
         </div>
       </div>
     </div>
@@ -1213,26 +1221,33 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
     <div class="modal-content" style="max-width: 400px; padding: 20px;">
       <div class="modal-header">
         <span class="modal-title">身材進度紀錄 📸</span>
-        <button class="modal-close" onclick="document.getElementById('photo-modal').classList.add('hidden')">&times;</button>
+        <button class="modal-close"
+          onclick="document.getElementById('photo-modal').classList.add('hidden')">&times;</button>
       </div>
-      <div id="photo-container" style="position:relative; margin-top:16px; border-radius:var(--radius-md); overflow:hidden; background:#000; min-height:300px; display:flex; align-items:center; justify-content:center;">
-        <img id="progress-photo-img" style="width:100%; display:block; filter:blur(40px); transition: filter 0.6s ease;">
-        <div id="photo-shield" style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); color:#fff; text-align:center; padding:20px; transition: opacity 0.4s ease;">
+      <div id="photo-container"
+        style="position:relative; margin-top:16px; border-radius:var(--radius-md); overflow:hidden; background:#000; min-height:300px; display:flex; align-items:center; justify-content:center;">
+        <img id="progress-photo-img"
+          style="width:100%; display:block; filter:blur(40px); transition: filter 0.6s ease;">
+        <div id="photo-shield"
+          style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); color:#fff; text-align:center; padding:20px; transition: opacity 0.4s ease;">
           <div style="font-size:48px; margin-bottom:12px;">🛡️</div>
           <div style="font-weight:700; font-size:18px; margin-bottom:8px;">隱私保護中</div>
           <p style="font-size:13px; opacity:0.8; margin-bottom:24px;">此照片僅存儲於您的本地設備<br>點擊下方按鈕解鎖查看</p>
-          <button class="btn-primary" onclick="revealProgressPhoto()" style="padding:10px 24px; font-size:14px; border-radius:30px; box-shadow:0 4px 15px rgba(56,178,172,0.4);">解開相片</button>
+          <button class="btn-primary" onclick="revealProgressPhoto()"
+            style="padding:10px 24px; font-size:14px; border-radius:30px; box-shadow:0 4px 15px rgba(56,178,172,0.4);">解開相片</button>
         </div>
       </div>
-      <button class="btn-secondary" style="width:100%; margin-top:20px;" onclick="document.getElementById('photo-modal').classList.add('hidden')">關閉</button>
+      <button class="btn-secondary" style="width:100%; margin-top:20px;"
+        onclick="document.getElementById('photo-modal').classList.add('hidden')">關閉</button>
     </div>
   </div>
 
   <!-- Hidden Camera Input -->
-  <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none" onchange="handleProgressPhotoUpload(event)">
+  <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
+    onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.1"></script>
-  <script src="app.js?v=2.1"></script>
+  <script src="db.js?v=2.2"></script>
+  <script src="app.js?v=2.2"></script>
   
 
   <script>
@@ -1529,7 +1544,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.0 Loaded (History Management)");
+  console.log("NutriTrack v2.2 Loaded (Photo Fix)");
   load();
   if (State.profile) {
     showApp();
@@ -2390,9 +2405,9 @@ function setWeightPeriod(p) {
 function logWeight() {
   const date = document.getElementById('w-date').value;
   const kg = parseFloat(document.getElementById('w-kg').value);
-  
+
   if (!date || !kg || kg < 20 || kg > 300) { alert('請輸入有效的體重值'); return; }
-  
+
   // Future date check
   if (new Date(date) > new Date()) {
     alert('無法記錄未來的體重，請選擇今天或過去的日期。');
@@ -2464,15 +2479,16 @@ async function handleProgressPhotoUpload(e) {
   const file = e.target.files[0];
   if (!file || !currentPhotoDate) return;
 
+  const targetDate = currentPhotoDate; // Capture before finally clears it
   try {
     const base64 = await compressProgressPhoto(file);
     const request = indexedDB.open('nt_photos_db', 1);
     request.onsuccess = (ev) => {
       const db = ev.target.result;
       const tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put({ date: currentPhotoDate, data: base64 });
+      tx.objectStore('photos').put({ date: targetDate, data: base64 });
       tx.oncomplete = () => {
-        State.hasPhotos.add(currentPhotoDate);
+        State.hasPhotos.add(targetDate);
         save();
         navigate('progress');
         alert('照片已成功保存至本地！');
@@ -2483,7 +2499,8 @@ async function handleProgressPhotoUpload(e) {
     alert('保存相片失敗');
   } finally {
     e.target.value = '';
-    currentPhotoDate = null;
+    // currentPhotoDate will be cleared by the next capture call or reset here
+    // but targetDate is safe in the closure
   }
 }
 
@@ -2610,7 +2627,7 @@ function drawWeightChart(weights) {
   pts.forEach((pt, i) => {
     const isFirst = (i === 0);
     const isLast = (i === sorted.length - 1);
-    const spaceOk = (pt.x - lastLabelX) > labelMinGap && (pts[pts.length-1].x - pt.x) > 30;
+    const spaceOk = (pt.x - lastLabelX) > labelMinGap && (pts[pts.length - 1].x - pt.x) > 30;
 
     if (isFirst || isLast || spaceOk) {
       lastLabelX = pt.x;
