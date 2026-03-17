@@ -638,6 +638,41 @@ input[type="date"] {
   .weight-input-form { flex-direction: column; }
 }
 
+/* Period Selector for Charts */
+.period-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+.period-selector::-webkit-scrollbar { display: none; }
+
+.period-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.period-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-primary);
+}
+
+.period-btn.active {
+  background: rgba(56,178,172,0.15);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}
+
 /* Dashboard Settings Button (Mobile prioritized) */
 .btn-settings-mobile {
   background: rgba(56,178,172,0.1);

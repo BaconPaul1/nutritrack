@@ -11,6 +11,9 @@ const State = {
   // Pending food add context
   pendingMeal: null,
   pendingFood: null,
+
+  // Weight chart filters
+  weightPeriod: localStorage.getItem('nt_weight_period') || 'ALL',
 };
 
 function todayStr() {
@@ -184,6 +187,7 @@ window.openSettingsModal = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;
 window.saveProfileSettings = saveProfileSettings;
 window.dangerResetAll = dangerResetAll;
+window.setWeightPeriod = setWeightPeriod;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -912,17 +916,32 @@ function progress() {
   const bmr = calcBMR(p);
   const tdee = calcTDEE(p);
   const goalCal = calcGoalCal(p);
-  const weights = State.weights.sort((a,b) => a.date.localeCompare(b.date));
+  
+  // Filtering logic
+  let weights = [...State.weights].sort((a,b) => a.date.localeCompare(b.date));
+  const now = new Date();
+  if (State.weightPeriod !== 'ALL') {
+    const days = { '1W':7, '1M':30, '3M':90, '6M':180, '1Y':365 }[State.weightPeriod];
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - days);
+    weights = weights.filter(w => new Date(w.date) >= cutoff);
+  }
+
+  const periods = [
+    {id:'1W', lbl:'1週'}, {id:'1M', lbl:'1個月'}, {id:'3M', lbl:'3個月'},
+    {id:'6M', lbl:'6個月'}, {id:'1Y', lbl:'1年'}, {id:'ALL', lbl:'全部'}
+  ];
 
   el.innerHTML = `
     <div class="page-header">
       <div class="page-title"><h1>體重進度 ⚖️</h1><p>記錄體重，自動重算代謝</p></div>
     </div>
     <div class="bmr-display">
-      <div><div class="bmr-val">${bmr}</div><div class="bmr-lbl">BMR 基礎代謝（大卡）</div></div>
-      <div><div class="bmr-val">${tdee}</div><div class="bmr-lbl">TDEE 每日消耗（大卡）</div></div>
-      <div><div class="bmr-val">${goalCal}</div><div class="bmr-lbl">熱量目標（大卡）</div></div>
+      <div><div class="bmr-val">${bmr}</div><div class="bmr-lbl">BMR 基礎代謝</div></div>
+      <div><div class="bmr-val">${tdee}</div><div class="bmr-lbl">TDEE 每日消耗</div></div>
+      <div><div class="bmr-val">${goalCal}</div><div class="bmr-lbl">預算：${p.goal > 0 ? '+' : ''}${p.goal}</div></div>
     </div>
+
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">新增體重記錄</div>
       <div class="weight-input-form">
@@ -938,31 +957,48 @@ function progress() {
         <button class="btn-primary" style="width:auto;padding:10px 24px;align-self:flex-end" onclick="logWeight()">記錄</button>
       </div>
     </div>
-    ${weights.length > 1 ? `
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-title">體重趨勢圖</div>
-      <canvas id="weight-chart" height="200"></canvas>
-    </div>` : ''}
-    <div class="card" style="padding:0;overflow:hidden">
+
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
       <div style="padding:14px 18px;border-bottom:1px solid var(--border)"><span class="card-title" style="margin:0">體重記錄歷史</span></div>
-      ${weights.length ? [...weights].reverse().map((w,i,arr) => {
-        const prev = arr[i+1];
-        const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
-        return `<div class="weight-entry">
-          <span class="weight-date">${new Date(w.date+'T12:00:00').toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'})}</span>
-          <div>
-            <span class="weight-val">${w.kg} kg</span>
-            ${diff !== null ? `<span class="weight-diff" style="color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
-              ${diff > 0 ? '+' : ''}${diff} kg
-            </span>` : ''}
-          </div>
-        </div>`;
-      }).join('') : `<div class="empty-state"><div class="empty-icon">⚖️</div><p>尚無體重記錄</p></div>`}
+      <div style="max-height: 300px; overflow-y: auto;">
+        ${State.weights.length ? [...State.weights].sort((a,b)=>b.date.localeCompare(a.date)).map((w,i,arr) => {
+          const prev = arr[i+1];
+          const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
+          return `<div class="weight-entry">
+            <span class="weight-date">${new Date(w.date+'T12:00:00').toLocaleDateString('zh-TW',{month:'short',day:'numeric'})}</span>
+            <div>
+              <span class="weight-val">${w.kg} kg</span>
+              ${diff !== null ? `<span class="weight-diff" style="color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
+                ${diff > 0 ? '+' : ''}${diff}
+              </span>` : ''}
+            </div>
+          </div>`;
+        }).join('') : `<div class="empty-state"><div class="empty-icon">⚖️</div><p>尚無體重記錄</p></div>`}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">體重趨勢分析</div>
+      <div class="period-selector">
+        ${periods.map(per => `<button class="period-btn ${State.weightPeriod === per.id ? 'active' : ''}" onclick="setWeightPeriod('${per.id}')">${per.lbl}</button>`).join('')}
+      </div>
+      ${weights.length > 1 ? `<canvas id="weight-chart" height="220"></canvas>` : `
+        <div class="empty-state" style="padding:40px 0">
+          <div style="font-size:32px;margin-bottom:10px">📉</div>
+          <p style="color:var(--text-muted)">此區間內記錄不足，無法繪製趨勢圖</p>
+        </div>
+      `}
     </div>
   `;
 
   setTimeout(() => { if (weights.length > 1) drawWeightChart(weights); }, 100);
   return el;
+}
+
+function setWeightPeriod(p) {
+  State.weightPeriod = p;
+  localStorage.setItem('nt_weight_period', p);
+  navigate('progress');
 }
 
 function logWeight() {
@@ -983,23 +1019,39 @@ function drawWeightChart(weights) {
   const canvas = document.getElementById('weight-chart');
   if (!canvas) return;
   const W = canvas.offsetWidth || 800;
-  canvas.width = W; canvas.height = 200;
+  const H = canvas.getAttribute('height') || 220;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const sorted = [...weights].sort((a,b) => a.date.localeCompare(b.date));
   const vals = sorted.map(w => w.kg);
-  const minV = Math.min(...vals) - 1;
-  const maxV = Math.max(...vals) + 1;
-  const pad = { t:20, r:20, b:40, l:50 };
+  
+  // Dynamic scale
+  const minV = Math.min(...vals) - 0.5;
+  const maxV = Math.max(...vals) + 0.5;
+  const pad = { t:30, r:30, b:40, l:50 };
   const fw = W - pad.l - pad.r;
-  const fh = 200 - pad.t - pad.b;
+  const fh = H - pad.t - pad.b;
+  
   const pts = sorted.map((w, i) => ({
     x: pad.l + (i / (sorted.length - 1 || 1)) * fw,
     y: pad.t + fh - ((w.kg - minV) / (maxV - minV)) * fh,
   }));
 
-  // Gradient fill
+  // Background Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for(let i=0; i<=4; i++) {
+    const y = pad.t + (fh/4)*i;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    // Y-axis labels
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
+    const val = maxV - ((maxV-minV)/4)*i;
+    ctx.fillText(val.toFixed(1), pad.l - 10, y + 3);
+  }
+
+  // Gradient Area
   const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + fh);
-  grad.addColorStop(0, 'rgba(56,178,172,0.35)');
+  grad.addColorStop(0, 'rgba(56,178,172,0.25)');
   grad.addColorStop(1, 'rgba(56,178,172,0)');
   ctx.beginPath();
   pts.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
@@ -1007,20 +1059,34 @@ function drawWeightChart(weights) {
   ctx.lineTo(pts[0].x, pad.t + fh);
   ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
 
-  // Line
-  ctx.beginPath(); ctx.strokeStyle = 'rgba(56,178,172,0.85)'; ctx.lineWidth = 2.5;
+  // Smoothing Line
+  ctx.beginPath(); ctx.strokeStyle = '#38b2ac'; ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
   pts.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
   ctx.stroke();
 
-  // Dots + labels
+  // Dots and Labels (Conditional based on density)
+  const showDetail = sorted.length <= 15;
+  const labelStep = Math.ceil(sorted.length / 8);
+
   pts.forEach((pt, i) => {
-    ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, 2*Math.PI);
-    ctx.fillStyle = '#38b2ac'; ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
-    ctx.fillText(sorted[i].kg + 'kg', pt.x, pt.y - 10);
-    const d = new Date(sorted[i].date + 'T12:00:00');
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillText(`${d.getMonth()+1}/${d.getDate()}`, pt.x, 200 - pad.b + 14);
+    // Labels on X-axis (Dates)
+    if (i % labelStep === 0 || i === sorted.length - 1) {
+      const d = new Date(sorted[i].date + 'T12:00:00');
+      ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center';
+      ctx.font = '10px Inter';
+      ctx.fillText(`${d.getMonth()+1}/${d.getDate()}`, pt.x, H - 15);
+    }
+
+    // Dots and weight values
+    if (showDetail) {
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, 2*Math.PI);
+      ctx.fillStyle = '#141720'; ctx.fill(); 
+      ctx.strokeStyle = '#38b2ac'; ctx.lineWidth = 2; ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 11px Inter';
+      ctx.fillText(sorted[i].kg, pt.x, pt.y - 12);
+    }
   });
 }
 
