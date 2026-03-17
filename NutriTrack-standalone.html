@@ -1368,21 +1368,42 @@ window.addEventListener('DOMContentLoaded', () => {
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
   const p = State.profile;
-  if (!p) return;
+  if (!p) {
+    console.error("Profile not found");
+    return;
+  }
   
-  document.getElementById('st-name').value = p.name;
-  document.getElementById('st-age').value = p.age;
-  document.getElementById('st-height').value = p.height;
-  document.getElementById('st-weight').value = p.weight;
-  
-  // Set radio buttons - use toString() for comparison just in case
-  const act = document.querySelector(`input[name="st-activity"][value="${p.activity}"]`);
-  if (act) act.checked = true;
-  
-  const goal = document.querySelector(`input[name="st-goal"][value="${p.goal}"]`);
-  if (goal) goal.checked = true;
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
 
-  document.getElementById('settings-modal').classList.remove('hidden');
+  setVal('st-name', p.name);
+  setVal('st-age', p.age);
+  setVal('st-height', p.height);
+  setVal('st-weight', p.weight);
+  
+  // Set radio buttons - more robust way using iteration
+  const setRadio = (name, value) => {
+    const radios = document.querySelectorAll(`input[name="${name}"]`);
+    radios.forEach(r => {
+      // Compare as strings to be safe
+      if (r.value.toString() === (value || '').toString()) {
+        r.checked = true;
+      }
+    });
+  };
+
+  setRadio('st-activity', p.activity);
+  setRadio('st-goal', p.goal);
+
+  const modal = document.getElementById('settings-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+  } else {
+    console.error("Settings modal element match not found");
+    alert("無法開啟設定視窗，請重新整理頁面。");
+  }
 }
 
 function closeSettingsModal() {
