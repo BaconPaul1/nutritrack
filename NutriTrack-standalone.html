@@ -1090,8 +1090,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
     </div>
   </div>
 
-  <script src="db.js?v=1.1"></script>
-  <script src="app.js?v=1.1"></script>
+  <script src="db.js?v=1.5"></script>
+  <script src="app.js?v=1.5"></script>
   
 
   <script>
@@ -1499,13 +1499,14 @@ function dashboard() {
   const el = document.createElement('div');
   el.className = 'page';
   el.innerHTML = `
-    <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
-      <div class="page-title">
-        <h1>今日總覽 👋</h1>
-        <p>哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'})}</p>
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <div class="page-title" style="min-width:0; flex:1;">
+        <h1 style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">今日總覽 👋</h1>
+        <p style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'})}</p>
       </div>
-      <button class="btn-settings-mobile" onclick="openSettingsModal()" title="個人設定">⚙️</button>
+      <button class="btn-settings-mobile" onclick="openSettingsModal()" title="個人設定" style="flex-shrink:0; min-width: 42px; min-height: 42px; font-size: 20px;">⚙️</button>
     </div>
+    <script>console.log("NutriTrack UI v1.5 loaded");</script>
 
     <div class="stats-strip">
       <div class="stat-card">
