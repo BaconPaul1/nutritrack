@@ -1387,10 +1387,14 @@ const State = {
   // Pending food add context
   pendingMeal: null,
   pendingFood: null,
+
+  // Weight chart filters
+  weightPeriod: localStorage.getItem('nt_weight_period') || 'ALL',
+  hasPhotos: new Set(JSON.parse(localStorage.getItem('nt_has_photos') || '[]')),
 };
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA');
 }
 
 function save() {
@@ -1399,14 +1403,20 @@ function save() {
   localStorage.setItem('nt_exercise', JSON.stringify(State.exercise));
   localStorage.setItem('nt_water', JSON.stringify(State.water));
   localStorage.setItem('nt_weights', JSON.stringify(State.weights));
+  localStorage.setItem('nt_has_photos', JSON.stringify([...State.hasPhotos]));
+  localStorage.setItem('nt_gemini_key', State.profile?.geminiKey || '');
 }
 
 function load() {
   try { State.profile = JSON.parse(localStorage.getItem('nt_profile')) || null; } catch (e) { }
+  if (State.profile && !State.profile.geminiKey) {
+    State.profile.geminiKey = localStorage.getItem('nt_gemini_key') || '';
+  }
   try { State.diary = JSON.parse(localStorage.getItem('nt_diary')) || {}; } catch (e) { }
   try { State.exercise = JSON.parse(localStorage.getItem('nt_exercise')) || {}; } catch (e) { }
   try { State.water = JSON.parse(localStorage.getItem('nt_water')) || {}; } catch (e) { }
   try { State.weights = JSON.parse(localStorage.getItem('nt_weights')) || []; } catch (e) { }
+  try { State.hasPhotos = new Set(JSON.parse(localStorage.getItem('nt_has_photos') || '[]')); } catch (e) { }
 }
 
 // ─── Calculations ─────────────────────────────────────────────────────────────
@@ -1462,9 +1472,11 @@ function getDayTotals(date) {
 
 function getWeeklyData() {
   const days = [];
+  const now = new Date();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const ds = d.toISOString().slice(0, 10);
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const ds = d.toLocaleDateString('en-CA');
     const t = getDayTotals(ds);
     days.push({ date: ds, label: d.toLocaleDateString('zh-TW', { weekday: 'short' }), kcal: t.kcal });
   }
@@ -1539,19 +1551,123 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  console.log("NutriTrack v2.5 Loaded (Exercise History)");
   load();
   if (State.profile) {
     showApp();
   } else {
     document.getElementById('onboarding-overlay').classList.remove('hidden');
   }
-  document.getElementById('reset-profile-btn').addEventListener('click', () => {
-    if (confirm('確定要重設所有資料嗎？')) {
-      localStorage.clear();
-      location.reload();
-    }
+  document.getElementById('nav-myfoods').addEventListener('click', () => {
+    // Ensuring it works if clicked directly in some cases
+  });
+
+  // Dedicated listener for settings
+  document.getElementById('settings-btn-desktop')?.addEventListener('click', () => {
+    openSettingsModal();
   });
 });
+
+// Explicitly make functions global for index.html onclick handlers
+window.openSettingsModal = openSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
+window.saveProfileSettings = saveProfileSettings;
+window.dangerResetAll = dangerResetAll;
+window.setWeightPeriod = setWeightPeriod;
+window.handleAIImage = handleAIImage;
+window.editWeight = editWeight;
+window.deleteWeight = deleteWeight;
+window.captureProgressPhoto = captureProgressPhoto;
+window.handleProgressPhotoUpload = handleProgressPhotoUpload;
+window.viewProgressPhoto = viewProgressPhoto;
+window.revealProgressPhoto = revealProgressPhoto;
+window.deleteProgressPhoto = deleteProgressPhoto;
+
+// ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
+function openSettingsModal() {
+  const p = State.profile;
+  if (!p) {
+    console.error("Profile not found");
+    return;
+  }
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
+
+  setVal('st-name', p.name);
+  setVal('st-age', p.age);
+  setVal('st-height', p.height);
+  setVal('st-weight', p.weight);
+
+  // Set radio buttons - more robust way using iteration
+  const setRadio = (name, value) => {
+    const radios = document.querySelectorAll(`input[name="${name}"]`);
+    radios.forEach(r => {
+      // Compare as strings to be safe
+      if (r.value.toString() === (value || '').toString()) {
+        r.checked = true;
+      }
+    });
+  };
+
+  setRadio('st-activity', p.activity);
+  setRadio('st-goal', p.goal);
+  setVal('set-api-key', p.geminiKey || '');
+
+  const modal = document.getElementById('settings-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+  } else {
+    console.error("Settings modal element match not found");
+    alert("無法開啟設定視窗，請重新整理頁面。");
+  }
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-modal').classList.add('hidden');
+}
+
+function saveProfileSettings() {
+  const name = document.getElementById('st-name').value.trim();
+  const age = parseInt(document.getElementById('st-age').value);
+  const height = parseFloat(document.getElementById('st-height').value);
+  const weight = parseFloat(document.getElementById('st-weight').value);
+  const activityInput = document.querySelector('input[name="st-activity"]:checked');
+  const goalInput = document.querySelector('input[name="st-goal"]:checked');
+
+  if (!name || isNaN(age) || isNaN(height) || isNaN(weight) || !activityInput || !goalInput) {
+    alert('請填寫所有必要欄位並選擇活動量與目標');
+    return;
+  }
+
+  const activity = parseFloat(activityInput.value);
+  const goal = goalInput.value;
+  const geminiKey = document.getElementById('set-api-key')?.value.trim() || '';
+
+  State.profile = {
+    ...State.profile,
+    name, age, height, weight, activity, goal, geminiKey
+  };
+
+  // If weight changed, log it in history if not already there for today
+  const lastW = State.weights[State.weights.length - 1];
+  if (!lastW || lastW.date !== todayStr() || lastW.kg !== weight) {
+    State.weights.push({ date: todayStr(), kg: weight });
+  }
+
+  save();
+  closeSettingsModal();
+  navigate(State.currentPage || 'dashboard');
+  alert('設定已更新！');
+}
+
+// Remove dangerResetAll as requested
+function dangerResetAll() {
+  // Function logic removed as per user request to remove the reset functionality
+  console.log("Reset functionality has been disabled.");
+}
 
 // ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
 function dashboard() {
@@ -1568,12 +1684,14 @@ function dashboard() {
   const el = document.createElement('div');
   el.className = 'page';
   el.innerHTML = `
-    <div class="page-header">
-      <div class="page-title">
-        <h1>今日總覽 👋</h1>
-        <p>哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <div class="page-title" style="min-width:0; flex:1;">
+        <h1 style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">今日總覽 👋</h1>
+        <p style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
+      <button class="btn-settings-mobile" onclick="openSettingsModal()" title="個人設定" style="flex-shrink:0; min-width: 42px; min-height: 42px; font-size: 20px;">⚙️</button>
     </div>
+    <script>console.log("NutriTrack UI v1.5 loaded");</script>
 
     <div class="stats-strip">
       <div class="stat-card">
@@ -1726,9 +1844,15 @@ function buildDiaryHTML(date) {
     { key: 'snacks', label: '點心', icon: '🍎' },
   ];
   return `
-    <div class="page-header">
-      <div class="page-title"><h1>飲食日記 📖</h1><p>記錄每一餐的攝取</p></div>
-      <div class="diary-date-nav">
+    <div class="page-header" style="flex-wrap: wrap; gap: 15px;">
+      <div class="page-title">
+        <h1 style="display:flex; align-items:center; gap:12px; font-size: 24px;">
+          飲食日記 📖
+          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖" style="padding: 4px 10px; font-size: 11px; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2); border-radius: 20px;">📸 AI</button>
+        </h1>
+        <p>記錄每一餐的攝取</p>
+      </div>
+      <div class="diary-date-nav" style="margin-left: auto;">
         <button class="btn-icon" onclick="changeDate(-1)">←</button>
         <span class="date-display">${new Date(date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
         <button class="btn-icon" onclick="changeDate(1)">→</button>
@@ -1912,7 +2036,6 @@ function exercise() {
     <div id="ex-panel">
       ${buildCardioPanel()}
     </div>
-    </div>
     ${logs.length ? `<div class="card" style="margin-top:16px">
       <div class="card-title" style="display:flex;justify-content:space-between">
         <span>今日運動總計</span><span style="color:var(--accent-green);font-weight:700">${totalBurned} 大卡消耗</span>
@@ -1958,6 +2081,19 @@ function buildStrengthPanel() {
   </div>`;
 }
 
+function buildLogPanel() {
+  const logs = getDayExercise(State.currentDate);
+  if (!logs.length) return `<div class="empty-state"><div class="empty-icon">🏋️</div><p>今天還沒有運動記錄</p></div>`;
+  const total = logs.reduce((s, e) => s + (e.burned || 0), 0);
+  return `<div class="card" style="padding:0;overflow:hidden">
+    ${logs.map((l, i) => `<div class="exercise-log-entry">
+      <div><div style="font-size:14px;font-weight:600">${l.icon || '🏃'} ${l.name}</div>
+      <div style="font-size:12px;color:var(--text-secondary)">${l.type === 'cardio' ? `${l.duration}分鐘` : `${l.sets}組 × ${l.reps}次 × ${l.weight}kg`}</div></div>
+      <div style="display:flex;gap:12px;align-items:center">
+        ${l.burned ? `<span style="font-size:14px;font-weight:700;color:var(--accent-green)">-${l.burned} 大卡</span>` : `<span class="badge badge-teal">肌力</span>`}
+        <button class="btn-icon" onclick="removeExercise(${i})" style="width:28px;height:28px;font-size:12px">✕</button>
+      </div>
+    </div>`).join('')}
     <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
       <span style="font-size:13px;font-weight:600">總計</span>
       <span style="font-size:14px;font-weight:700;color:var(--accent-green)">${total} 大卡</span>
@@ -2076,7 +2212,8 @@ function logStrength(id) {
 
 function removeExercise(idx, date) {
   const targetDate = date || State.currentDate;
-  getDayExercise(targetDate).splice(idx, 1);
+  if (!State.exercise[targetDate]) return;
+  State.exercise[targetDate].splice(idx, 1);
   save();
   navigate('exercise');
 }
@@ -2220,23 +2357,38 @@ function progress() {
   const bmr = calcBMR(p);
   const tdee = calcTDEE(p);
   const goalCal = calcGoalCal(p);
-  const weights = State.weights.sort((a, b) => a.date.localeCompare(b.date));
+
+  // Filtering logic
+  let weights = [...State.weights].sort((a, b) => a.date.localeCompare(b.date));
+  const now = new Date();
+  if (State.weightPeriod !== 'ALL') {
+    const days = { '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365 }[State.weightPeriod];
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - days);
+    weights = weights.filter(w => new Date(w.date) >= cutoff);
+  }
+
+  const periods = [
+    { id: '1W', lbl: '1週' }, { id: '1M', lbl: '1個月' }, { id: '3M', lbl: '3個月' },
+    { id: '6M', lbl: '6個月' }, { id: '1Y', lbl: '1年' }, { id: 'ALL', lbl: '全部' }
+  ];
 
   el.innerHTML = `
     <div class="page-header">
       <div class="page-title"><h1>體重進度 ⚖️</h1><p>記錄體重，自動重算代謝</p></div>
     </div>
     <div class="bmr-display">
-      <div><div class="bmr-val">${bmr}</div><div class="bmr-lbl">BMR 基礎代謝（大卡）</div></div>
-      <div><div class="bmr-val">${tdee}</div><div class="bmr-lbl">TDEE 每日消耗（大卡）</div></div>
-      <div><div class="bmr-val">${goalCal}</div><div class="bmr-lbl">熱量目標（大卡）</div></div>
+      <div><div class="bmr-val">${bmr}</div><div class="bmr-lbl">BMR 基礎代謝</div></div>
+      <div><div class="bmr-val">${tdee}</div><div class="bmr-lbl">TDEE 每日消耗</div></div>
+      <div><div class="bmr-val">${goalCal}</div><div class="bmr-lbl">預算：${p.goal > 0 ? '+' : ''}${p.goal}</div></div>
     </div>
+
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">新增體重記錄</div>
       <div class="weight-input-form">
         <div class="form-group" style="flex:1">
           <label>日期</label>
-          <input type="date" id="w-date" value="${todayStr()}" style="width:100%" />
+          <input type="date" id="w-date" value="${todayStr()}" max="${todayStr()}" style="width:100%" />
         </div>
         <div class="form-group" style="flex:1">
           <label>體重 (kg)</label>
@@ -2246,26 +2398,44 @@ function progress() {
         <button class="btn-primary" style="width:auto;padding:10px 24px;align-self:flex-end" onclick="logWeight()">記錄</button>
       </div>
     </div>
-    ${weights.length > 1 ? `
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-title">體重趨勢圖</div>
-      <canvas id="weight-chart" height="200"></canvas>
-    </div>` : ''}
-    <div class="card" style="padding:0;overflow:hidden">
+
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
       <div style="padding:14px 18px;border-bottom:1px solid var(--border)"><span class="card-title" style="margin:0">體重記錄歷史</span></div>
-      ${weights.length ? [...weights].reverse().map((w, i, arr) => {
+      <div style="max-height: 300px; overflow-y: auto;">
+        ${State.weights.length ? [...State.weights].sort((a, b) => b.date.localeCompare(a.date)).map((w, i, arr) => {
     const prev = arr[i + 1];
     const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
-    return `<div class="weight-entry">
-          <span class="weight-date">${new Date(w.date + 'T12:00:00').toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-          <div>
-            <span class="weight-val">${w.kg} kg</span>
-            ${diff !== null ? `<span class="weight-diff" style="color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
-              ${diff > 0 ? '+' : ''}${diff} kg
-            </span>` : ''}
-          </div>
-        </div>`;
+    const hasPhoto = State.hasPhotos.has(w.date);
+    return `<div class="weight-entry" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="weight-date">${new Date(w.date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
+              <span class="weight-val" style="font-weight:700;">${w.kg} kg</span>
+              ${diff !== null ? `<span class="weight-diff" style="font-size:11px; color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
+                ${diff > 0 ? '↑' : diff < 0 ? '↓' : ''}${Math.abs(diff)}
+              </span>` : ''}
+              ${hasPhoto ? `<span onclick="viewProgressPhoto('${w.date}')" style="cursor:pointer; font-size:14px;" title="查看進度照">👁️</span>` : ''}
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-icon" onclick="captureProgressPhoto('${w.date}')" style="width:28px; height:28px; font-size:12px;" title="拍照">📸</button>
+              <button class="btn-icon" onclick="editWeight('${w.date}', ${w.kg})" style="width:28px; height:28px; font-size:12px;" title="編輯">✏️</button>
+              <button class="btn-icon" onclick="deleteWeight('${w.date}')" style="width:28px; height:28px; font-size:12px;" title="刪除">🗑️</button>
+            </div>
+          </div>`;
   }).join('') : `<div class="empty-state"><div class="empty-icon">⚖️</div><p>尚無體重記錄</p></div>`}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">體重趨勢分析</div>
+      <div class="period-selector">
+        ${periods.map(per => `<button class="period-btn ${State.weightPeriod === per.id ? 'active' : ''}" onclick="setWeightPeriod('${per.id}')">${per.lbl}</button>`).join('')}
+      </div>
+      ${weights.length > 1 ? `<canvas id="weight-chart" height="220"></canvas>` : `
+        <div class="empty-state" style="padding:40px 0">
+          <div style="font-size:32px;margin-bottom:10px">📉</div>
+          <p style="color:var(--text-muted)">此區間內記錄不足，無法繪製趨勢圖</p>
+        </div>
+      `}
     </div>
   `;
 
@@ -2273,11 +2443,24 @@ function progress() {
   return el;
 }
 
+function setWeightPeriod(p) {
+  State.weightPeriod = p;
+  localStorage.setItem('nt_weight_period', p);
+  navigate('progress');
+}
+
 function logWeight() {
   const date = document.getElementById('w-date').value;
   const kg = parseFloat(document.getElementById('w-kg').value);
+
   if (!date || !kg || kg < 20 || kg > 300) { alert('請輸入有效的體重值'); return; }
-  // Remove existing entry for same date
+
+  // Future date check
+  if (new Date(date) > new Date()) {
+    alert('無法記錄未來的體重，請選擇今天或過去的日期。');
+    return;
+  }
+  // Remove existing entry for same date (Update logic)
   State.weights = State.weights.filter(w => w.date !== date);
   State.weights.push({ date, kg });
   // Update profile weight to latest
@@ -2287,27 +2470,208 @@ function logWeight() {
   navigate('progress');
 }
 
+function editWeight(date, kg) {
+  const dateInput = document.getElementById('w-date');
+  const kgInput = document.getElementById('w-kg');
+  if (dateInput && kgInput) {
+    dateInput.value = date;
+    kgInput.value = kg;
+    // Scroll to form
+    document.querySelector('.weight-input-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    kgInput.focus();
+  }
+}
+
+function deleteWeight(date) {
+  if (!confirm(`確定要刪除 ${date} 的體重記錄嗎？`)) return;
+  State.weights = State.weights.filter(w => w.date !== date);
+  // Clean up photo
+  if (State.hasPhotos.has(date)) {
+    State.hasPhotos.delete(date);
+    indexedDB.open('nt_photos_db', 1).onsuccess = (e) => {
+      const db = e.target.result;
+      const tx = db.transaction('photos', 'readwrite');
+      tx.objectStore('photos').delete(date);
+    };
+  }
+  // Update profile weight if we deleted the latest one
+  const latest = [...State.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (latest) {
+    State.profile.weight = latest.kg;
+  }
+  save();
+  navigate('progress');
+}
+
+// ─── Progress Photos (IndexedDB + Compression) ───────────────────────────────
+let currentPhotoDate = null;
+
+function initPhotoDB() {
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onupgradeneeded = (e) => {
+    const db = e.target.result;
+    if (!db.objectStoreNames.contains('photos')) {
+      db.createObjectStore('photos', { keyPath: 'date' });
+    }
+  };
+}
+initPhotoDB();
+
+function captureProgressPhoto(date) {
+  currentPhotoDate = date;
+  document.getElementById('progress-photo-input').click();
+}
+
+async function handleProgressPhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file || !currentPhotoDate) return;
+
+  const targetDate = currentPhotoDate; // Capture before finally clears it
+  try {
+    const base64 = await compressProgressPhoto(file);
+    const request = indexedDB.open('nt_photos_db', 1);
+    request.onsuccess = (ev) => {
+      const db = ev.target.result;
+      const tx = db.transaction('photos', 'readwrite');
+      tx.objectStore('photos').put({ date: targetDate, data: base64 });
+      tx.oncomplete = () => {
+        State.hasPhotos.add(targetDate);
+        save();
+        navigate('progress');
+        alert('照片已成功保存至本地！');
+      };
+    };
+  } catch (err) {
+    console.error(err);
+    alert('保存相片失敗');
+  } finally {
+    e.target.value = '';
+    // currentPhotoDate will be cleared by the next capture call or reset here
+    // but targetDate is safe in the closure
+  }
+}
+
+function compressProgressPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 800;
+
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        // JPEG Quality: 0.4 for high compression
+        resolve(canvas.toDataURL('image/jpeg', 0.4));
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+}
+
+function viewProgressPhoto(date) {
+  currentPhotoDate = date; // Set for deletion
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onsuccess = (e) => {
+    const db = e.target.result;
+    const tx = db.transaction('photos', 'readonly');
+    const get = tx.objectStore('photos').get(date);
+    get.onsuccess = () => {
+      if (get.result) {
+        const img = document.getElementById('progress-photo-img');
+        const shield = document.getElementById('photo-shield');
+        img.src = get.result.data;
+        img.style.filter = 'blur(40px)';
+        shield.style.opacity = '1';
+        shield.style.pointerEvents = 'auto';
+        document.getElementById('photo-modal').classList.remove('hidden');
+      }
+    };
+  };
+}
+
+function revealProgressPhoto() {
+  const img = document.getElementById('progress-photo-img');
+  const shield = document.getElementById('photo-shield');
+  img.style.filter = 'blur(0px)';
+  shield.style.opacity = '0';
+  shield.style.pointerEvents = 'none';
+}
+
+function deleteProgressPhoto() {
+  if (!currentPhotoDate) return;
+  if (!confirm(`確定要刪除這張進度照片嗎？`)) return;
+
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onsuccess = (e) => {
+    const db = e.target.result;
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(currentPhotoDate);
+    tx.oncomplete = () => {
+      State.hasPhotos.delete(currentPhotoDate);
+      save();
+      document.getElementById('photo-modal').classList.add('hidden');
+      navigate('progress');
+      alert('照片已刪除');
+    };
+  };
+}
+
 function drawWeightChart(weights) {
   const canvas = document.getElementById('weight-chart');
   if (!canvas) return;
   const W = canvas.offsetWidth || 800;
-  canvas.width = W; canvas.height = 200;
+  const H = canvas.getAttribute('height') || 220;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const sorted = [...weights].sort((a, b) => a.date.localeCompare(b.date));
   const vals = sorted.map(w => w.kg);
-  const minV = Math.min(...vals) - 1;
-  const maxV = Math.max(...vals) + 1;
-  const pad = { t: 20, r: 20, b: 40, l: 50 };
+  const findTime = (d) => new Date(d + 'T12:00:00').getTime();
+  const minT = findTime(sorted[0].date);
+  const maxT = findTime(sorted[sorted.length - 1].date);
+  const timeRange = maxT - minT || 86400000;
+
+  // Dynamic scale
+  const minV = Math.min(...vals) - 0.5;
+  const maxV = Math.max(...vals) + 0.5;
+  const pad = { t: 30, r: 30, b: 40, l: 50 };
   const fw = W - pad.l - pad.r;
-  const fh = 200 - pad.t - pad.b;
+  const fh = H - pad.t - pad.b;
+
   const pts = sorted.map((w, i) => ({
-    x: pad.l + (i / (sorted.length - 1 || 1)) * fw,
+    x: pad.l + ((findTime(w.date) - minT) / timeRange) * fw,
     y: pad.t + fh - ((w.kg - minV) / (maxV - minV)) * fh,
   }));
 
-  // Gradient fill
+  // Background Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (fh / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    // Y-axis labels
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
+    const val = maxV - ((maxV - minV) / 4) * i;
+    ctx.fillText(val.toFixed(1), pad.l - 10, y + 3);
+  }
+
+  // Gradient Area
   const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + fh);
-  grad.addColorStop(0, 'rgba(56,178,172,0.35)');
+  grad.addColorStop(0, 'rgba(56,178,172,0.25)');
   grad.addColorStop(1, 'rgba(56,178,172,0)');
   ctx.beginPath();
   pts.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
@@ -2315,20 +2679,40 @@ function drawWeightChart(weights) {
   ctx.lineTo(pts[0].x, pad.t + fh);
   ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
 
-  // Line
-  ctx.beginPath(); ctx.strokeStyle = 'rgba(56,178,172,0.85)'; ctx.lineWidth = 2.5;
+  // Smoothing Line
+  ctx.beginPath(); ctx.strokeStyle = '#38b2ac'; ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
   pts.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
   ctx.stroke();
 
-  // Dots + labels
+  // Dots and Labels (Conditional based on density)
+  const showDetail = sorted.length <= 15;
+  // X-axis labeling logic
+  let lastLabelX = -100;
+  const labelMinGap = 55;
+
   pts.forEach((pt, i) => {
-    ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
-    ctx.fillStyle = '#38b2ac'; ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10px Inter'; ctx.textAlign = 'center';
-    ctx.fillText(sorted[i].kg + 'kg', pt.x, pt.y - 10);
-    const d = new Date(sorted[i].date + 'T12:00:00');
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillText(`${d.getMonth() + 1}/${d.getDate()}`, pt.x, 200 - pad.b + 14);
+    const isFirst = (i === 0);
+    const isLast = (i === sorted.length - 1);
+    const spaceOk = (pt.x - lastLabelX) > labelMinGap && (pts[pts.length - 1].x - pt.x) > 30;
+
+    if (isFirst || isLast || spaceOk) {
+      lastLabelX = pt.x;
+      const d = new Date(sorted[i].date + 'T12:00:00');
+      ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'center';
+      ctx.font = '10px Inter';
+      ctx.fillText(`${d.getMonth() + 1}/${d.getDate()}`, pt.x, H - 15);
+    }
+
+    // Dots and weight values
+    if (showDetail) {
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = '#141720'; ctx.fill();
+      ctx.strokeStyle = '#38b2ac'; ctx.lineWidth = 2; ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 11px Inter';
+      ctx.fillText(sorted[i].kg, pt.x, pt.y - 12);
+    }
   });
 }
 
@@ -2648,6 +3032,171 @@ function deleteMfFood(idx) {
   foods.splice(idx, 1);
   saveCustomFoods(foods);
   refilterMf('');
+}
+// ─── AI FOOD RECOGNITION ───────────────────────────────────────────────────
+let _aiPendingResults = [];
+
+async function handleAIImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!State.profile?.geminiKey) {
+    console.warn("AI 識圖失敗：缺少 API Key");
+    alert("請先在「個人設定」中輸入您的 Google Gemini API Key 才能開啟 AI 功能。");
+    openSettingsModal();
+    return;
+  }
+
+  console.log("正在啟動 AI 識圖，檔案：", file.name);
+  const modal = document.getElementById('ai-modal');
+  const loading = document.getElementById('ai-loading-state');
+  const results = document.getElementById('ai-results-state');
+
+  if (!modal) {
+    console.error("找不到 ai-modal 元素");
+    return;
+  }
+  modal.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  results.classList.add('hidden');
+
+  try {
+    const resizedBase64 = await resizeAndCompressImage(file);
+    // Show preview (can still use original if we want, but resized is safer)
+    document.getElementById('ai-img-preview').style.backgroundImage = `url(${resizedBase64})`;
+
+    // Predetermine meal if possible
+    if (State.pendingMeal) {
+      document.getElementById('ai-meal-target').value = State.pendingMeal;
+    }
+
+    // Call Gemini
+    const data = await analyzeFoodImage(resizedBase64);
+    _aiPendingResults = data.items || [];
+
+    // Render results
+    renderAIResults(_aiPendingResults);
+
+    loading.classList.add('hidden');
+    results.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    alert("AI 分析失敗：" + err.message);
+    modal.classList.add('hidden');
+  } finally {
+    event.target.value = ''; // clear input
+  }
+}
+
+function resizeAndCompressImage(file, maxWidth = 1024, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxWidth) {
+            width *= maxWidth / height;
+            height = maxWidth;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function analyzeFoodImage(base64) {
+  const apiKey = State.profile.geminiKey;
+  const prompt = "您是一位精確的營養師。請分析這張照片中的食物。估算每種食物的名稱、大概重量(g)、熱量(kcal)、蛋白質(g)、碳水(g)、脂肪(g)。請務必僅以 JSON 格式回傳，格式如下：{\"items\": [{\"name\":\"食物名\",\"weight\":150, \"kcal\":200, \"protein\":15, \"carbs\":20, \"fat\":5}]}";
+
+  // Strip metadata prefix if present
+  const base64Data = base64.split(',')[1];
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+        ]
+      }]
+    })
+  });
+
+  const json = await response.json();
+  if (json.error) throw new Error(json.error.message);
+
+  const text = json.candidates[0].content.parts[0].text;
+  const cleanText = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(cleanText);
+}
+
+function renderAIResults(items) {
+  const container = document.getElementById('ai-food-list');
+  container.innerHTML = items.map((it, idx) => `
+    <div class="ai-food-item">
+      <div>
+        <div style="font-weight:600">${it.name}</div>
+        <div style="font-size:12px; color:var(--text-muted)">估計 ${it.weight}g | ${it.kcal}大卡</div>
+      </div>
+      <div style="font-size:12px; text-align:right">
+        P:${it.protein} C:${it.carbs} F:${it.fat}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('btn-ai-confirm').onclick = () => {
+    const meal = document.getElementById('ai-meal-target').value;
+    const date = State.currentDate;
+    if (!State.diary[date]) State.diary[date] = { breakfast: [], lunch: [], dinner: [], snacks: [] };
+
+    items.forEach(it => {
+      State.diary[date][meal].push({
+        name: it.name,
+        kcal: it.kcal,
+        protein: it.protein,
+        carbs: it.carbs,
+        fat: it.fat,
+        amount: 1, // unit
+        unit: '份'
+      });
+    });
+
+    save();
+    document.getElementById('ai-modal').classList.add('hidden');
+    navigate('diary');
+    alert(`已將 ${items.length} 項食物加入您的${meal === 'breakfast' ? '早餐' : meal === 'lunch' ? '午餐' : meal === 'dinner' ? '晚餐' : '點心'}！`);
+  };
 }
 
   </script>
