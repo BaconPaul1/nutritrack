@@ -1237,8 +1237,13 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
             style="padding:10px 24px; font-size:14px; border-radius:30px; box-shadow:0 4px 15px rgba(56,178,172,0.4);">解開相片</button>
         </div>
       </div>
-      <button class="btn-secondary" style="width:100%; margin-top:20px;"
-        onclick="document.getElementById('photo-modal').classList.add('hidden')">關閉</button>
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button id="btn-delete-photo" class="btn-secondary"
+          style="background:#ff4757; color:#fff; border:none; padding:10px; font-size:14px;"
+          onclick="deleteProgressPhoto()">刪除照片</button>
+        <button class="btn-secondary" style="flex:1"
+          onclick="document.getElementById('photo-modal').classList.add('hidden')">關閉</button>
+      </div>
     </div>
   </div>
 
@@ -1246,8 +1251,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.2"></script>
-  <script src="app.js?v=2.2"></script>
+  <script src="db.js?v=2.3"></script>
+  <script src="app.js?v=2.3"></script>
   
 
   <script>
@@ -1544,7 +1549,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.2 Loaded (Photo Fix)");
+  console.log("NutriTrack v2.3 Loaded (Photo Deletion)");
   load();
   if (State.profile) {
     showApp();
@@ -1574,6 +1579,7 @@ window.captureProgressPhoto = captureProgressPhoto;
 window.handleProgressPhotoUpload = handleProgressPhotoUpload;
 window.viewProgressPhoto = viewProgressPhoto;
 window.revealProgressPhoto = revealProgressPhoto;
+window.deleteProgressPhoto = deleteProgressPhoto;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -2537,6 +2543,7 @@ function compressProgressPhoto(file) {
 }
 
 function viewProgressPhoto(date) {
+  currentPhotoDate = date; // Set for deletion
   const request = indexedDB.open('nt_photos_db', 1);
   request.onsuccess = (e) => {
     const db = e.target.result;
@@ -2562,6 +2569,25 @@ function revealProgressPhoto() {
   img.style.filter = 'blur(0px)';
   shield.style.opacity = '0';
   shield.style.pointerEvents = 'none';
+}
+
+function deleteProgressPhoto() {
+  if (!currentPhotoDate) return;
+  if (!confirm(`確定要刪除這張進度照片嗎？`)) return;
+
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onsuccess = (e) => {
+    const db = e.target.result;
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(currentPhotoDate);
+    tx.oncomplete = () => {
+      State.hasPhotos.delete(currentPhotoDate);
+      save();
+      document.getElementById('photo-modal').classList.add('hidden');
+      navigate('progress');
+      alert('照片已刪除');
+    };
+  };
 }
 
 function drawWeightChart(weights) {

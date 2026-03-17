@@ -173,7 +173,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.2 Loaded (Photo Fix)");
+  console.log("NutriTrack v2.3 Loaded (Photo Deletion)");
   load();
   if (State.profile) {
     showApp();
@@ -203,6 +203,7 @@ window.captureProgressPhoto = captureProgressPhoto;
 window.handleProgressPhotoUpload = handleProgressPhotoUpload;
 window.viewProgressPhoto = viewProgressPhoto;
 window.revealProgressPhoto = revealProgressPhoto;
+window.deleteProgressPhoto = deleteProgressPhoto;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -1166,6 +1167,7 @@ function compressProgressPhoto(file) {
 }
 
 function viewProgressPhoto(date) {
+  currentPhotoDate = date; // Set for deletion
   const request = indexedDB.open('nt_photos_db', 1);
   request.onsuccess = (e) => {
     const db = e.target.result;
@@ -1191,6 +1193,25 @@ function revealProgressPhoto() {
   img.style.filter = 'blur(0px)';
   shield.style.opacity = '0';
   shield.style.pointerEvents = 'none';
+}
+
+function deleteProgressPhoto() {
+  if (!currentPhotoDate) return;
+  if (!confirm(`確定要刪除這張進度照片嗎？`)) return;
+
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onsuccess = (e) => {
+    const db = e.target.result;
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(currentPhotoDate);
+    tx.oncomplete = () => {
+      State.hasPhotos.delete(currentPhotoDate);
+      save();
+      document.getElementById('photo-modal').classList.add('hidden');
+      navigate('progress');
+      alert('照片已刪除');
+    };
+  };
 }
 
 function drawWeightChart(weights) {

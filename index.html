@@ -481,8 +481,13 @@
             style="padding:10px 24px; font-size:14px; border-radius:30px; box-shadow:0 4px 15px rgba(56,178,172,0.4);">解開相片</button>
         </div>
       </div>
-      <button class="btn-secondary" style="width:100%; margin-top:20px;"
-        onclick="document.getElementById('photo-modal').classList.add('hidden')">關閉</button>
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button id="btn-delete-photo" class="btn-secondary"
+          style="background:#ff4757; color:#fff; border:none; padding:10px; font-size:14px;"
+          onclick="deleteProgressPhoto()">刪除照片</button>
+        <button class="btn-secondary" style="flex:1"
+          onclick="document.getElementById('photo-modal').classList.add('hidden')">關閉</button>
+      </div>
     </div>
   </div>
 
@@ -490,13 +495,13 @@
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.2"></script>
-  <script src="app.js?v=2.2"></script>
+  <script src="db.js?v=2.3"></script>
+  <script src="app.js?v=2.3"></script>
   <script>
     // Register Service Worker for PWA / offline support
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => { });
+        navigator.serviceWorker.register('./sw.js').catch(() => {  });
       });
     }
   </script>
