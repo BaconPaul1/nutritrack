@@ -26,10 +26,14 @@ function save() {
   localStorage.setItem('nt_exercise', JSON.stringify(State.exercise));
   localStorage.setItem('nt_water', JSON.stringify(State.water));
   localStorage.setItem('nt_weights', JSON.stringify(State.weights));
+  localStorage.setItem('nt_gemini_key', State.profile?.geminiKey || '');
 }
 
 function load() {
   try { State.profile  = JSON.parse(localStorage.getItem('nt_profile')) || null; } catch(e){}
+  if (State.profile && !State.profile.geminiKey) {
+    State.profile.geminiKey = localStorage.getItem('nt_gemini_key') || '';
+  }
   try { State.diary    = JSON.parse(localStorage.getItem('nt_diary'))   || {}; } catch(e){}
   try { State.exercise = JSON.parse(localStorage.getItem('nt_exercise'))|| {}; } catch(e){}
   try { State.water    = JSON.parse(localStorage.getItem('nt_water'))   || {}; } catch(e){}
@@ -188,6 +192,7 @@ window.closeSettingsModal = closeSettingsModal;
 window.saveProfileSettings = saveProfileSettings;
 window.dangerResetAll = dangerResetAll;
 window.setWeightPeriod = setWeightPeriod;
+window.handleAIImage = handleAIImage;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -218,8 +223,8 @@ function openSettingsModal() {
     });
   };
 
-  setRadio('st-activity', p.activity);
   setRadio('st-goal', p.goal);
+  setVal('set-api-key', p.geminiKey);
 
   const modal = document.getElementById('settings-modal');
   if (modal) {
@@ -1406,4 +1411,121 @@ function deleteMfFood(idx) {
   foods.splice(idx, 1);
   saveCustomFoods(foods);
   refilterMf('');
+}
+// ─── AI FOOD RECOGNITION ───────────────────────────────────────────────────
+let _aiPendingResults = [];
+
+async function handleAIImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!State.profile?.geminiKey) {
+    alert("請先在「個人設定」中輸入您的 Google Gemini API Key 才能開啟 AI 功能。");
+    openSettingsModal();
+    return;
+  }
+
+  const modal = document.getElementById('ai-modal');
+  const loading = document.getElementById('ai-loading-state');
+  const results = document.getElementById('ai-results-state');
+  modal.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  results.classList.add('hidden');
+
+  try {
+    const base64 = await fileToBase64(file);
+    // Show preview
+    document.getElementById('ai-img-preview').style.backgroundImage = `url(${base64})`;
+    
+    // Call Gemini
+    const data = await analyzeFoodImage(base64);
+    _aiPendingResults = data.items || [];
+    
+    // Render results
+    renderAIResults(_aiPendingResults);
+    
+    loading.classList.add('hidden');
+    results.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    alert("AI 分析失敗：" + err.message);
+    modal.classList.add('hidden');
+  } finally {
+    event.target.value = ''; // clear input
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function analyzeFoodImage(base64) {
+  const apiKey = State.profile.geminiKey;
+  const prompt = "您是一位精確的營養師。請分析這張照片中的食物。估算每種食物的名稱、大概重量(g)、熱量(kcal)、蛋白質(g)、碳水(g)、脂肪(g)。請務必僅以 JSON 格式回傳，格式如下：{\"items\": [{\"name\":\"食物名\",\"weight\":150, \"kcal\":200, \"protein\":15, \"carbs\":20, \"fat\":5}]}";
+  
+  // Strip metadata prefix if present
+  const base64Data = base64.split(',')[1];
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+        ]
+      }]
+    })
+  });
+
+  const json = await response.json();
+  if (json.error) throw new Error(json.error.message);
+  
+  const text = json.candidates[0].content.parts[0].text;
+  const cleanText = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(cleanText);
+}
+
+function renderAIResults(items) {
+  const container = document.getElementById('ai-food-list');
+  container.innerHTML = items.map((it, idx) => `
+    <div class="ai-food-item">
+      <div>
+        <div style="font-weight:600">${it.name}</div>
+        <div style="font-size:12px; color:var(--text-muted)">估計 ${it.weight}g | ${it.kcal}大卡</div>
+      </div>
+      <div style="font-size:12px; text-align:right">
+        P:${it.protein} C:${it.carbs} F:${it.fat}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('btn-ai-confirm').onclick = () => {
+    const meal = document.getElementById('ai-meal-target').value;
+    const date = State.currentDate;
+    if (!State.diary[date]) State.diary[date] = { breakfast:[], lunch:[], dinner:[], snacks:[] };
+    
+    items.forEach(it => {
+      State.diary[date][meal].push({
+        name: it.name,
+        kcal: it.kcal,
+        protein: it.protein,
+        carbs: it.carbs,
+        fat: it.fat,
+        amount: 1, // unit
+        unit: '份'
+      });
+    });
+    
+    save();
+    document.getElementById('ai-modal').classList.add('hidden');
+    navigate('diary');
+    alert(`已將 ${items.length} 項食物加入您的${meal === 'breakfast' ? '早餐' : meal === 'lunch' ? '午餐' : meal === 'dinner' ? '晚餐' : '點心'}！`);
+  };
 }
