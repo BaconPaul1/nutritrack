@@ -1,0 +1,26 @@
+{
+  "name": "NutriTrack – 智能飲食追蹤",
+  "short_name": "NutriTrack",
+  "description": "科學級代謝建模與飲食追蹤平台，基於 Mifflin-St Jeor 公式精算每日熱量需求",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d0f14",
+  "theme_color": "#38b2ac",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "fitness"],
+  "lang": "zh-TW"
+}

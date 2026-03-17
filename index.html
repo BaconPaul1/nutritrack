@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NutriTrack – 智能飲食追蹤系統</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <meta name="description" content="科學級代謝建模與飲食追蹤平台，基於 Mifflin-St Jeor 公式精算您的每日熱量需求" />
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#38b2ac" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NutriTrack" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Onboarding Overlay -->
+  <div id="onboarding-overlay" class="onboarding-overlay hidden">
+    <div class="onboarding-container">
+      <div class="onboarding-logo">
+        <div class="logo-icon">🥦</div>
+        <h1>NutriTrack</h1>
+        <p>智能代謝建模 · 科學飲食追蹤</p>
+      </div>
+      <!-- Step 1: Basic Info -->
+      <div class="step active" id="step-1">
+        <h2>基本資料設定</h2>
+        <p class="step-subtitle">用於精確計算您的基礎代謝率 (BMR)</p>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>您的姓名</label>
+            <input type="text" id="ob-name" placeholder="輸入您的名字" />
+          </div>
+          <div class="form-group">
+            <label>性別</label>
+            <div class="radio-group">
+              <label class="radio-card">
+                <input type="radio" name="ob-sex" value="male" checked />
+                <span>♂ 男性</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="ob-sex" value="female" />
+                <span>♀ 女性</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>年齡</label>
+            <input type="number" id="ob-age" placeholder="歲" min="10" max="120" />
+          </div>
+          <div class="form-group">
+            <label>身高 (cm)</label>
+            <input type="number" id="ob-height" placeholder="公分" min="100" max="250" />
+          </div>
+          <div class="form-group">
+            <label>體重 (kg)</label>
+            <input type="number" id="ob-weight" placeholder="公斤" min="20" max="300" step="0.1" />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="nextStep(1)">下一步 →</button>
+      </div>
+      <!-- Step 2: Activity Level -->
+      <div class="step" id="step-2">
+        <h2>日常活動水平</h2>
+        <p class="step-subtitle">請選擇您非刻意運動時的日常活動強度</p>
+        <div class="activity-cards">
+          <label class="activity-card">
+            <input type="radio" name="ob-activity" value="1.4" />
+            <div class="activity-content">
+              <span class="activity-icon">🪑</span>
+              <span class="activity-name">久坐不動</span>
+              <span class="activity-desc">辦公室工作，很少走動</span>
+              <span class="activity-mult">×1.4 BMR</span>
+            </div>
+          </label>
+          <label class="activity-card">
+            <input type="radio" name="ob-activity" value="1.6" checked />
+            <div class="activity-content">
+              <span class="activity-icon">🚶</span>
+              <span class="activity-name">輕度活動</span>
+              <span class="activity-desc">教師、銷售員，需站立走動</span>
+              <span class="activity-mult">×1.6 BMR</span>
+            </div>
+          </label>
+          <label class="activity-card">
+            <input type="radio" name="ob-activity" value="1.8" />
+            <div class="activity-content">
+              <span class="activity-icon">🏃</span>
+              <span class="activity-name">中度活動</span>
+              <span class="activity-desc">護士、服務生，體力耗費較大</span>
+              <span class="activity-mult">×1.8 BMR</span>
+            </div>
+          </label>
+          <label class="activity-card">
+            <input type="radio" name="ob-activity" value="2.0" />
+            <div class="activity-content">
+              <span class="activity-icon">⛏️</span>
+              <span class="activity-name">高度活動</span>
+              <span class="activity-desc">建築工人、快遞員，重體力勞動</span>
+              <span class="activity-mult">×2.0 BMR</span>
+            </div>
+          </label>
+        </div>
+        <div class="step-nav">
+          <button class="btn-secondary" onclick="prevStep(2)">← 上一步</button>
+          <button class="btn-primary" onclick="nextStep(2)">下一步 →</button>
+        </div>
+      </div>
+      <!-- Step 3: Goal -->
+      <div class="step" id="step-3">
+        <h2>設定您的目標</h2>
+        <p class="step-subtitle">系統將根據目標調整每日熱量預算</p>
+        <div class="goal-cards">
+          <label class="goal-card">
+            <input type="radio" name="ob-goal" value="-500" />
+            <div class="goal-content">
+              <span class="goal-icon">📉</span>
+              <span class="goal-name">減重</span>
+              <span class="goal-desc">每周約減 0.5 公斤<br>TDEE − 500 大卡</span>
+            </div>
+          </label>
+          <label class="goal-card">
+            <input type="radio" name="ob-goal" value="0" checked />
+            <div class="goal-content">
+              <span class="goal-icon">⚖️</span>
+              <span class="goal-name">維持體重</span>
+              <span class="goal-desc">保持現有體重<br>= TDEE</span>
+            </div>
+          </label>
+          <label class="goal-card">
+            <input type="radio" name="ob-goal" value="+500" />
+            <div class="goal-content">
+              <span class="goal-icon">📈</span>
+              <span class="goal-name">增重/增肌</span>
+              <span class="goal-desc">每周約增 0.5 公斤<br>TDEE + 500 大卡</span>
+            </div>
+          </label>
+        </div>
+        <div class="step-nav">
+          <button class="btn-secondary" onclick="prevStep(3)">← 上一步</button>
+          <button class="btn-primary" onclick="finishOnboarding()">開始追蹤 🚀</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app hidden">
+    <!-- Sidebar Nav -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <span>🥦</span>
+        <span>NutriTrack</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" data-page="dashboard" id="nav-dashboard" class="nav-link active">
+          <span class="nav-icon">🏠</span><span>今日總覽</span>
+        </a></li>
+        <li><a href="#" data-page="diary" id="nav-diary" class="nav-link">
+          <span class="nav-icon">📖</span><span>飲食日記</span>
+        </a></li>
+        <li><a href="#" data-page="exercise" id="nav-exercise" class="nav-link">
+          <span class="nav-icon">🏋️</span><span>運動記錄</span>
+        </a></li>
+        <li><a href="#" data-page="nutrition" id="nav-nutrition" class="nav-link">
+          <span class="nav-icon">📊</span><span>營養分析</span>
+        </a></li>
+        <li><a href="#" data-page="progress" id="nav-progress" class="nav-link">
+          <span class="nav-icon">⚖️</span><span>體重進度</span>
+        </a></li>
+        <li><a href="#" data-page="myfoods" id="nav-myfoods" class="nav-link">
+          <span class="nav-icon">🗂️</span><span>我的食物庫</span>
+        </a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="btn-reset" id="reset-profile-btn">
+          <span>⚙️</span> 重設個人檔案
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="bottom-nav">
+      <a href="#" data-page="dashboard" class="bottom-nav-item active">
+        <span>🏠</span><span>總覽</span>
+      </a>
+      <a href="#" data-page="diary" class="bottom-nav-item">
+        <span>📖</span><span>日記</span>
+      </a>
+      <a href="#" data-page="exercise" class="bottom-nav-item">
+        <span>🏋️</span><span>運動</span>
+      </a>
+      <a href="#" data-page="nutrition" class="bottom-nav-item">
+        <span>📊</span><span>分析</span>
+      </a>
+      <a href="#" data-page="progress" class="bottom-nav-item">
+        <span>⚖️</span><span>進度</span>
+      </a>
+      <a href="#" data-page="myfoods" class="bottom-nav-item">
+        <span>🗂️</span><span>食物庫</span>
+      </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+      <!-- Pages injected by JS -->
+    </main>
+  </div>
+
+  <!-- Food Search Modal -->
+  <div id="food-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeFoodModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔍 搜尋食物</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-scan" onclick="openBarcodeScanner()" title="掃描條碼">📷 掃描條碼</button>
+          <button class="modal-close" onclick="closeFoodModal()">✕</button>
+        </div>
+      </div>
+      <div class="modal-search">
+        <input type="text" id="food-search-input" placeholder="輸入食物名稱..." oninput="searchFoods(this.value)" />
+      </div>
+      <div id="food-search-results" class="food-results"></div>
+      <div class="modal-divider">
+        <span>或手動新增</span>
+      </div>
+      <div class="custom-food-form">
+        <h4>自訂食物</h4>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>食物名稱</label>
+            <input type="text" id="cf-name" placeholder="食物名稱" />
+          </div>
+          <div class="form-group">
+            <label>熱量 (大卡)</label>
+            <input type="number" id="cf-kcal" placeholder="0" min="0" />
+          </div>
+          <div class="form-group">
+            <label>蛋白質 (g)</label>
+            <input type="number" id="cf-protein" placeholder="0" min="0" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>碳水 (g)</label>
+            <input type="number" id="cf-carbs" placeholder="0" min="0" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>脂肪 (g)</label>
+            <input type="number" id="cf-fat" placeholder="0" min="0" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>份量 (g)</label>
+            <input type="number" id="cf-serving" placeholder="100" min="1" value="100" />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="addCustomFood()">新增自訂食物</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Serving Size Modal -->
+  <div id="serving-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeServingModal()"></div>
+    <div class="modal-content serving-modal-content">
+      <div class="modal-header">
+        <h3 id="serving-food-name">調整份量</h3>
+        <button class="modal-close" onclick="closeServingModal()">✕</button>
+      </div>
+      <div class="serving-form">
+        <div class="form-group">
+          <label>份量 (公克)</label>
+          <input type="number" id="serving-grams" value="100" min="1" step="1" oninput="updateServingPreview()" />
+        </div>
+        <div class="serving-preview" id="serving-preview"></div>
+        <button class="btn-primary" onclick="confirmServing()">加入日記</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barcode Scanner Modal -->
+  <div id="barcode-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeBarcodeScanner()"></div>
+    <div class="modal-content" style="max-width:480px">
+      <div class="modal-header">
+        <h3>📷 掃描食品條碼</h3>
+        <button class="modal-close" onclick="closeBarcodeScanner()">✕</button>
+      </div>
+      <div style="padding:16px 24px">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">將相機對準食品包裝上的條碼（EAN / UPC）</p>
+        <div id="barcode-reader" style="width:100%;border-radius:var(--radius-md);overflow:hidden"></div>
+        <div id="barcode-status" style="margin-top:14px;text-align:center;font-size:13px;color:var(--text-secondary)">等待相機啟動…</div>
+        <div id="barcode-result" class="hidden" style="margin-top:14px;background:rgba(56,178,172,0.08);border:1px solid rgba(56,178,172,0.25);border-radius:var(--radius-md);padding:16px">
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">找到食品：</div>
+          <div id="barcode-food-name" style="font-size:17px;font-weight:700;margin-bottom:4px"></div>
+          <div id="barcode-food-macro" style="font-size:13px;color:var(--text-secondary)"></div>
+          <button class="btn-primary" style="margin-top:14px" onclick="addBarcodeFood()">加入日記</button>
+        </div>
+        <div id="barcode-not-found" class="hidden" style="margin-top:14px;text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">😕</div>
+          <p style="font-size:14px;color:var(--text-secondary)">找不到此條碼，請嘗試手動搜尋<br/>或新增自訂食物</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Register Service Worker for PWA / offline support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
