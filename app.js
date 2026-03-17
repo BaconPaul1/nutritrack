@@ -14,6 +14,7 @@ const State = {
 
   // Weight chart filters
   weightPeriod: localStorage.getItem('nt_weight_period') || 'ALL',
+  hasPhotos: new Set(JSON.parse(localStorage.getItem('nt_has_photos') || '[]')),
 };
 
 function todayStr() {
@@ -26,6 +27,7 @@ function save() {
   localStorage.setItem('nt_exercise', JSON.stringify(State.exercise));
   localStorage.setItem('nt_water', JSON.stringify(State.water));
   localStorage.setItem('nt_weights', JSON.stringify(State.weights));
+  localStorage.setItem('nt_has_photos', JSON.stringify([...State.hasPhotos]));
   localStorage.setItem('nt_gemini_key', State.profile?.geminiKey || '');
 }
 
@@ -38,6 +40,7 @@ function load() {
   try { State.exercise = JSON.parse(localStorage.getItem('nt_exercise')) || {}; } catch (e) { }
   try { State.water = JSON.parse(localStorage.getItem('nt_water')) || {}; } catch (e) { }
   try { State.weights = JSON.parse(localStorage.getItem('nt_weights')) || []; } catch (e) { }
+  try { State.hasPhotos = new Set(JSON.parse(localStorage.getItem('nt_has_photos') || '[]')); } catch (e) { }
 }
 
 // ─── Calculations ─────────────────────────────────────────────────────────────
@@ -196,6 +199,10 @@ window.setWeightPeriod = setWeightPeriod;
 window.handleAIImage = handleAIImage;
 window.editWeight = editWeight;
 window.deleteWeight = deleteWeight;
+window.captureProgressPhoto = captureProgressPhoto;
+window.handleProgressPhotoUpload = handleProgressPhotoUpload;
+window.viewProgressPhoto = viewProgressPhoto;
+window.revealProgressPhoto = revealProgressPhoto;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -980,6 +987,7 @@ function progress() {
         ${State.weights.length ? [...State.weights].sort((a, b) => b.date.localeCompare(a.date)).map((w, i, arr) => {
     const prev = arr[i + 1];
     const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
+    const hasPhoto = State.hasPhotos.has(w.date);
     return `<div class="weight-entry" style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:12px;">
               <span class="weight-date">${new Date(w.date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
@@ -987,8 +995,10 @@ function progress() {
               ${diff !== null ? `<span class="weight-diff" style="font-size:11px; color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
                 ${diff > 0 ? '↑' : diff < 0 ? '↓' : ''}${Math.abs(diff)}
               </span>` : ''}
+              ${hasPhoto ? `<span onclick="viewProgressPhoto('${w.date}')" style="cursor:pointer; font-size:14px;" title="查看進度照">👁️</span>` : ''}
             </div>
             <div style="display:flex; gap:8px;">
+              <button class="btn-icon" onclick="captureProgressPhoto('${w.date}')" style="width:28px; height:28px; font-size:12px;" title="拍照">📸</button>
               <button class="btn-icon" onclick="editWeight('${w.date}', ${w.kg})" style="width:28px; height:28px; font-size:12px;" title="編輯">✏️</button>
               <button class="btn-icon" onclick="deleteWeight('${w.date}')" style="width:28px; height:28px; font-size:12px;" title="刪除">🗑️</button>
             </div>
@@ -1057,6 +1067,15 @@ function editWeight(date, kg) {
 function deleteWeight(date) {
   if (!confirm(`確定要刪除 ${date} 的體重記錄嗎？`)) return;
   State.weights = State.weights.filter(w => w.date !== date);
+  // Clean up photo
+  if (State.hasPhotos.has(date)) {
+    State.hasPhotos.delete(date);
+    indexedDB.open('nt_photos_db', 1).onsuccess = (e) => {
+      const db = e.target.result;
+      const tx = db.transaction('photos', 'readwrite');
+      tx.objectStore('photos').delete(date);
+    };
+  }
   // Update profile weight if we deleted the latest one
   const latest = [...State.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
   if (latest) {
@@ -1064,6 +1083,112 @@ function deleteWeight(date) {
   }
   save();
   navigate('progress');
+}
+
+// ─── Progress Photos (IndexedDB + Compression) ───────────────────────────────
+let currentPhotoDate = null;
+
+function initPhotoDB() {
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onupgradeneeded = (e) => {
+    const db = e.target.result;
+    if (!db.objectStoreNames.contains('photos')) {
+      db.createObjectStore('photos', { keyPath: 'date' });
+    }
+  };
+}
+initPhotoDB();
+
+function captureProgressPhoto(date) {
+  currentPhotoDate = date;
+  document.getElementById('progress-photo-input').click();
+}
+
+async function handleProgressPhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file || !currentPhotoDate) return;
+
+  try {
+    const base64 = await compressProgressPhoto(file);
+    const request = indexedDB.open('nt_photos_db', 1);
+    request.onsuccess = (ev) => {
+      const db = ev.target.result;
+      const tx = db.transaction('photos', 'readwrite');
+      tx.objectStore('photos').put({ date: currentPhotoDate, data: base64 });
+      tx.oncomplete = () => {
+        State.hasPhotos.add(currentPhotoDate);
+        save();
+        navigate('progress');
+        alert('照片已成功保存至本地！');
+      };
+    };
+  } catch (err) {
+    console.error(err);
+    alert('保存相片失敗');
+  } finally {
+    e.target.value = '';
+    currentPhotoDate = null;
+  }
+}
+
+function compressProgressPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 800;
+
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        // JPEG Quality: 0.4 for high compression
+        resolve(canvas.toDataURL('image/jpeg', 0.4));
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+}
+
+function viewProgressPhoto(date) {
+  const request = indexedDB.open('nt_photos_db', 1);
+  request.onsuccess = (e) => {
+    const db = e.target.result;
+    const tx = db.transaction('photos', 'readonly');
+    const get = tx.objectStore('photos').get(date);
+    get.onsuccess = () => {
+      if (get.result) {
+        const img = document.getElementById('progress-photo-img');
+        const shield = document.getElementById('photo-shield');
+        img.src = get.result.data;
+        img.style.filter = 'blur(40px)';
+        shield.style.opacity = '1';
+        shield.style.pointerEvents = 'auto';
+        document.getElementById('photo-modal').classList.remove('hidden');
+      }
+    };
+  };
+}
+
+function revealProgressPhoto() {
+  const img = document.getElementById('progress-photo-img');
+  const shield = document.getElementById('photo-shield');
+  img.style.filter = 'blur(0px)';
+  shield.style.opacity = '0';
+  shield.style.pointerEvents = 'none';
 }
 
 function drawWeightChart(weights) {
