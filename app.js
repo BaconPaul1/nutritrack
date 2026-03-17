@@ -223,8 +223,9 @@ function openSettingsModal() {
     });
   };
 
+  setRadio('st-activity', p.activity);
   setRadio('st-goal', p.goal);
-  setVal('set-api-key', p.geminiKey);
+  setVal('set-api-key', p.geminiKey || '');
 
   const modal = document.getElementById('settings-modal');
   if (modal) {
@@ -253,11 +254,12 @@ function saveProfileSettings() {
   }
 
   const activity = parseFloat(activityInput.value);
-  const goal = goalInput.value; // Store as string ("-500", "0", "500") as calcGoalCal uses parseInt()
+  const goal = goalInput.value;
+  const geminiKey = document.getElementById('set-api-key')?.value.trim() || '';
 
   State.profile = {
     ...State.profile,
-    name, age, height, weight, activity, goal
+    name, age, height, weight, activity, goal, geminiKey
   };
 
   // If weight changed, log it in history if not already there for today
