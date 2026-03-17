@@ -417,7 +417,8 @@
   </div>
 
   <!-- AI Analysis Modal -->
-  <div id="ai-modal" class="modal-overlay hidden">
+  <div id="ai-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="document.getElementById('ai-modal').classList.add('hidden')"></div>
     <div class="modal-content" style="max-width: 450px">
       <div class="modal-header">
         <h2 class="modal-title">AI 營養師分析中...</h2>

@@ -1427,14 +1427,21 @@ async function handleAIImage(event) {
   const file = event.target.files[0];
   if (!file) return;
   if (!State.profile?.geminiKey) {
+    console.warn("AI 識圖失敗：缺少 API Key");
     alert("請先在「個人設定」中輸入您的 Google Gemini API Key 才能開啟 AI 功能。");
     openSettingsModal();
     return;
   }
 
+  console.log("正在啟動 AI 識圖，檔案：", file.name);
   const modal = document.getElementById('ai-modal');
   const loading = document.getElementById('ai-loading-state');
   const results = document.getElementById('ai-results-state');
+
+  if (!modal) {
+    console.error("找不到 ai-modal 元素");
+    return;
+  }
   modal.classList.remove('hidden');
   loading.classList.remove('hidden');
   results.classList.add('hidden');
