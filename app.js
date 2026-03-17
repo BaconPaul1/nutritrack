@@ -18,7 +18,7 @@ const State = {
 };
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA');
 }
 
 function save() {
@@ -96,9 +96,11 @@ function getDayTotals(date) {
 
 function getWeeklyData() {
   const days = [];
+  const now = new Date();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const ds = d.toISOString().slice(0, 10);
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const ds = d.toLocaleDateString('en-CA');
     const t = getDayTotals(ds);
     days.push({ date: ds, label: d.toLocaleDateString('zh-TW', { weekday: 'short' }), kcal: t.kcal });
   }
@@ -173,7 +175,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.3 Loaded (Photo Deletion)");
+  console.log("NutriTrack v2.4 Loaded (Date Fix)");
   load();
   if (State.profile) {
     showApp();
