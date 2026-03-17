@@ -169,13 +169,71 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     document.getElementById('onboarding-overlay').classList.remove('hidden');
   }
-  document.getElementById('reset-profile-btn').addEventListener('click', () => {
-    if (confirm('確定要重設所有資料嗎？')) {
-      localStorage.clear();
-      location.reload();
-    }
+  document.getElementById('nav-myfoods').addEventListener('click', () => {
+    // Ensuring it works if clicked directly in some cases
   });
 });
+
+// ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
+function openSettingsModal() {
+  const p = State.profile;
+  if (!p) return;
+  
+  document.getElementById('st-name').value = p.name;
+  document.getElementById('st-age').value = p.age;
+  document.getElementById('st-height').value = p.height;
+  document.getElementById('st-weight').value = p.weight;
+  
+  // Set radio buttons
+  const act = document.querySelector(`input[name="st-activity"][value="${p.activity}"]`);
+  if (act) act.checked = true;
+  
+  const goal = document.querySelector(`input[name="st-goal"][value="${p.goal}"]`);
+  if (goal) goal.checked = true;
+
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-modal').classList.add('hidden');
+}
+
+function saveProfileSettings() {
+  const name = document.getElementById('st-name').value.trim();
+  const age = parseInt(document.getElementById('st-age').value);
+  const height = parseFloat(document.getElementById('st-height').value);
+  const weight = parseFloat(document.getElementById('st-weight').value);
+  const activity = parseFloat(document.querySelector('input[name="st-activity"]:checked').value);
+  const goal = document.querySelector('input[name="st-goal"]:checked').value;
+
+  if (!name || isNaN(age) || isNaN(height) || isNaN(weight)) {
+    alert('請填寫所有必要欄位');
+    return;
+  }
+
+  State.profile = {
+    ...State.profile,
+    name, age, height, weight, activity, goal
+  };
+
+  // If weight changed, log it in history if not already there for today
+  const lastW = State.weights[State.weights.length-1];
+  if (!lastW || lastW.date !== todayStr() || lastW.kg !== weight) {
+    State.weights.push({ date: todayStr(), kg: weight });
+  }
+
+  save();
+  closeSettingsModal();
+  navigate(State.currentPage || 'dashboard');
+  alert('設定已更新！');
+}
+
+function dangerResetAll() {
+  if (confirm('‼️ 警告：這將會刪除您所有的飲食、運動、體重歷史與個人設定。此動作無法復原！\n\n您確定要繼續嗎？')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
 
 // ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
 function dashboard() {

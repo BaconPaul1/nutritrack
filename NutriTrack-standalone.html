@@ -827,8 +827,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         </a></li>
       </ul>
       <div class="sidebar-footer">
-        <button class="btn-reset" id="reset-profile-btn">
-          <span>⚙️</span> 重設個人檔案
+        <button class="btn-reset" onclick="openSettingsModal()" style="background:rgba(56,178,172,0.1);color:var(--accent-teal);border-color:rgba(56,178,172,0.3)">
+          <span>⚙️</span> 個人設定
         </button>
       </div>
     </nav>
@@ -952,6 +952,86 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         <div id="barcode-not-found" class="hidden" style="margin-top:14px;text-align:center">
           <div style="font-size:32px;margin-bottom:8px">😕</div>
           <p style="font-size:14px;color:var(--text-secondary)">找不到此條碼，請嘗試手動搜尋<br/>或新增自訂食物</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeSettingsModal()"></div>
+    <div class="modal-content" style="max-width:560px">
+      <div class="modal-header">
+        <h3>⚙️ 個人設定</h3>
+        <button class="modal-close" onclick="closeSettingsModal()">✕</button>
+      </div>
+      <div style="padding:24px; max-height: 80vh; overflow-y: auto;">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>顯示名稱</label>
+            <input type="text" id="st-name" />
+          </div>
+          <div class="form-group">
+            <label>年齡</label>
+            <input type="number" id="st-age" />
+          </div>
+          <div class="form-group">
+            <label>身高 (cm)</label>
+            <input type="number" id="st-height" />
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>目前體重 (kg) - <small>如需記錄進度請至「體重進度」頁面</small></label>
+            <input type="number" id="st-weight" />
+          </div>
+        </div>
+
+        <h4 style="margin:24px 0 16px">活動量等級</h4>
+        <div class="activity-selector">
+          <label class="activity-card">
+            <input type="radio" name="st-activity" value="1.2" />
+            <div class="activity-info"><strong>久坐</strong><span>幾乎不運動</span></div>
+          </label>
+          <label class="activity-card">
+            <input type="radio" name="st-activity" value="1.375" />
+            <div class="activity-info"><strong>輕度</strong><span>每週運動 1-3 天</span></div>
+          </label>
+          <label class="activity-card">
+            <input type="radio" name="st-activity" value="1.55" />
+            <div class="activity-info"><strong>中度</strong><span>每週運動 3-5 天</span></div>
+          </label>
+          <label class="activity-card">
+            <input type="radio" name="st-activity" value="1.725" />
+            <div class="activity-info"><strong>高度</strong><span>每週運動 6-7 天</span></div>
+          </label>
+        </div>
+
+        <h4 style="margin:24px 0 16px">體重目標</h4>
+        <div class="goal-selector">
+          <label class="goal-card">
+            <input type="radio" name="st-goal" value="lose" />
+            <div class="goal-icon">🥗</div>
+            <div class="goal-name">健康減重</div>
+          </label>
+          <label class="goal-card">
+            <input type="radio" name="st-goal" value="maintain" />
+            <div class="goal-icon">⚖️</div>
+            <div class="goal-name">維持體重</div>
+          </label>
+          <label class="goal-card">
+            <input type="radio" name="st-goal" value="gain" />
+            <div class="goal-icon">💪</div>
+            <div class="goal-name">肌肉增重</div>
+          </label>
+        </div>
+
+        <div style="margin-top:32px; display:flex; gap:12px;">
+          <button class="btn-primary" style="flex:1" onclick="saveProfileSettings()">儲存變更</button>
+          <button class="btn-secondary" onclick="closeSettingsModal()">取消</button>
+        </div>
+
+        <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);" />
+        <div style="text-align:center">
+          <button class="btn-ghost" onclick="dangerResetAll()" style="color:var(--accent-red)">🗑️ 永久重設並清空所有資料</button>
         </div>
       </div>
     </div>
@@ -1251,13 +1331,71 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     document.getElementById('onboarding-overlay').classList.remove('hidden');
   }
-  document.getElementById('reset-profile-btn').addEventListener('click', () => {
-    if (confirm('確定要重設所有資料嗎？')) {
-      localStorage.clear();
-      location.reload();
-    }
+  document.getElementById('nav-myfoods').addEventListener('click', () => {
+    // Ensuring it works if clicked directly in some cases
   });
 });
+
+// ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
+function openSettingsModal() {
+  const p = State.profile;
+  if (!p) return;
+  
+  document.getElementById('st-name').value = p.name;
+  document.getElementById('st-age').value = p.age;
+  document.getElementById('st-height').value = p.height;
+  document.getElementById('st-weight').value = p.weight;
+  
+  // Set radio buttons
+  const act = document.querySelector(`input[name="st-activity"][value="${p.activity}"]`);
+  if (act) act.checked = true;
+  
+  const goal = document.querySelector(`input[name="st-goal"][value="${p.goal}"]`);
+  if (goal) goal.checked = true;
+
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-modal').classList.add('hidden');
+}
+
+function saveProfileSettings() {
+  const name = document.getElementById('st-name').value.trim();
+  const age = parseInt(document.getElementById('st-age').value);
+  const height = parseFloat(document.getElementById('st-height').value);
+  const weight = parseFloat(document.getElementById('st-weight').value);
+  const activity = parseFloat(document.querySelector('input[name="st-activity"]:checked').value);
+  const goal = document.querySelector('input[name="st-goal"]:checked').value;
+
+  if (!name || isNaN(age) || isNaN(height) || isNaN(weight)) {
+    alert('請填寫所有必要欄位');
+    return;
+  }
+
+  State.profile = {
+    ...State.profile,
+    name, age, height, weight, activity, goal
+  };
+
+  // If weight changed, log it in history if not already there for today
+  const lastW = State.weights[State.weights.length-1];
+  if (!lastW || lastW.date !== todayStr() || lastW.kg !== weight) {
+    State.weights.push({ date: todayStr(), kg: weight });
+  }
+
+  save();
+  closeSettingsModal();
+  navigate(State.currentPage || 'dashboard');
+  alert('設定已更新！');
+}
+
+function dangerResetAll() {
+  if (confirm('‼️ 警告：這將會刪除您所有的飲食、運動、體重歷史與個人設定。此動作無法復原！\n\n您確定要繼續嗎？')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
 
 // ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
 function dashboard() {
