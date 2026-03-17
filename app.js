@@ -170,7 +170,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v1.8 Loaded");
+  console.log("NutriTrack v1.9 Loaded");
   load();
   if (State.profile) {
     showApp();
@@ -961,7 +961,7 @@ function progress() {
       <div class="weight-input-form">
         <div class="form-group" style="flex:1">
           <label>日期</label>
-          <input type="date" id="w-date" value="${todayStr()}" style="width:100%" />
+          <input type="date" id="w-date" value="${todayStr()}" max="${todayStr()}" style="width:100%" />
         </div>
         <div class="form-group" style="flex:1">
           <label>體重 (kg)</label>
@@ -1018,7 +1018,14 @@ function setWeightPeriod(p) {
 function logWeight() {
   const date = document.getElementById('w-date').value;
   const kg = parseFloat(document.getElementById('w-kg').value);
+  
   if (!date || !kg || kg < 20 || kg > 300) { alert('請輸入有效的體重值'); return; }
+  
+  // Future date check
+  if (new Date(date) > new Date()) {
+    alert('無法記錄未來的體重，請選擇今天或過去的日期。');
+    return;
+  }
   // Remove existing entry for same date
   State.weights = State.weights.filter(w => w.date !== date);
   State.weights.push({ date, kg });
