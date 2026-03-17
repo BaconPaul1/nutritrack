@@ -263,11 +263,10 @@ function saveProfileSettings() {
   alert('設定已更新！');
 }
 
+// Remove dangerResetAll as requested
 function dangerResetAll() {
-  if (confirm('‼️ 警告：這將會刪除您所有的飲食、運動、體重歷史與個人設定。此動作無法復原！\n\n您確定要繼續嗎？')) {
-    localStorage.clear();
-    location.reload();
-  }
+  // Function logic removed as per user request to remove the reset functionality
+  console.log("Reset functionality has been disabled.");
 }
 
 // ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
@@ -285,11 +284,12 @@ function dashboard() {
   const el = document.createElement('div');
   el.className = 'page';
   el.innerHTML = `
-    <div class="page-header">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
       <div class="page-title">
         <h1>今日總覽 👋</h1>
         <p>哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'})}</p>
       </div>
+      <button class="btn-settings-mobile" onclick="openSettingsModal()" title="個人設定">⚙️</button>
     </div>
 
     <div class="stats-strip">

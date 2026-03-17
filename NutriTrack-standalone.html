@@ -640,7 +640,7 @@ input[type="date"] {
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .bottom-nav { display: flex; }
-  .bottom-nav-item { padding: 4px 6px; }
+  .bottom-nav-item { padding: 4px 12px; }
   .main-content { padding: 20px 16px 80px; }
   .dashboard-top { grid-template-columns: 1fr; }
   .stats-strip { grid-template-columns: repeat(2,1fr); }
@@ -653,6 +653,33 @@ input[type="date"] {
   .micro-grid { grid-template-columns: 1fr; }
   .bmr-display { grid-template-columns: 1fr; }
   .weight-input-form { flex-direction: column; }
+}
+
+/* Dashboard Settings Button (Mobile prioritized) */
+.btn-settings-mobile {
+  background: rgba(56,178,172,0.1);
+  border: 1px solid rgba(56,178,172,0.2);
+  color: var(--accent-teal);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-settings-mobile:hover {
+  background: rgba(56,178,172,0.2);
+  transform: scale(1.05);
+}
+
+@media (min-width: 769px) {
+  /* Hide dashboard settings button on desktop since sidebar has it */
+  .btn-settings-mobile { display: none; }
 }
 @media (max-width: 480px) {
   .stats-strip { grid-template-columns: 1fr 1fr; }
@@ -853,9 +880,6 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       </a>
       <a href="#" data-page="myfoods" class="bottom-nav-item">
         <span>🗂️</span><span>食物庫</span>
-      </a>
-      <a href="#" id="settings-btn-mobile" class="bottom-nav-item" onclick="openSettingsModal()">
-        <span>⚙️</span><span>設定</span>
       </a>
     </nav>
 
@@ -1062,10 +1086,6 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
           <button class="btn-secondary" onclick="closeSettingsModal()">取消</button>
         </div>
 
-        <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);" />
-        <div style="text-align:center">
-          <button class="btn-ghost" onclick="dangerResetAll()" style="color:var(--accent-red)">🗑️ 永久重設並清空所有資料</button>
-        </div>
       </div>
     </div>
   </div>
@@ -1458,11 +1478,10 @@ function saveProfileSettings() {
   alert('設定已更新！');
 }
 
+// Remove dangerResetAll as requested
 function dangerResetAll() {
-  if (confirm('‼️ 警告：這將會刪除您所有的飲食、運動、體重歷史與個人設定。此動作無法復原！\n\n您確定要繼續嗎？')) {
-    localStorage.clear();
-    location.reload();
-  }
+  // Function logic removed as per user request to remove the reset functionality
+  console.log("Reset functionality has been disabled.");
 }
 
 // ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
@@ -1480,11 +1499,12 @@ function dashboard() {
   const el = document.createElement('div');
   el.className = 'page';
   el.innerHTML = `
-    <div class="page-header">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
       <div class="page-title">
         <h1>今日總覽 👋</h1>
         <p>哈囉 ${p.name}！今天是 ${new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'})}</p>
       </div>
+      <button class="btn-settings-mobile" onclick="openSettingsModal()" title="個人設定">⚙️</button>
     </div>
 
     <div class="stats-strip">

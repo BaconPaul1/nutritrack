@@ -623,7 +623,7 @@ input[type="date"] {
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .bottom-nav { display: flex; }
-  .bottom-nav-item { padding: 4px 6px; }
+  .bottom-nav-item { padding: 4px 12px; }
   .main-content { padding: 20px 16px 80px; }
   .dashboard-top { grid-template-columns: 1fr; }
   .stats-strip { grid-template-columns: repeat(2,1fr); }
@@ -636,6 +636,33 @@ input[type="date"] {
   .micro-grid { grid-template-columns: 1fr; }
   .bmr-display { grid-template-columns: 1fr; }
   .weight-input-form { flex-direction: column; }
+}
+
+/* Dashboard Settings Button (Mobile prioritized) */
+.btn-settings-mobile {
+  background: rgba(56,178,172,0.1);
+  border: 1px solid rgba(56,178,172,0.2);
+  color: var(--accent-teal);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-settings-mobile:hover {
+  background: rgba(56,178,172,0.2);
+  transform: scale(1.05);
+}
+
+@media (min-width: 769px) {
+  /* Hide dashboard settings button on desktop since sidebar has it */
+  .btn-settings-mobile { display: none; }
 }
 @media (max-width: 480px) {
   .stats-strip { grid-template-columns: 1fr 1fr; }
