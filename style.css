@@ -623,6 +623,7 @@ input[type="date"] {
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .bottom-nav { display: flex; }
+  .bottom-nav-item { padding: 4px 6px; }
   .main-content { padding: 20px 16px 80px; }
   .dashboard-top { grid-template-columns: 1fr; }
   .stats-strip { grid-template-columns: repeat(2,1fr); }

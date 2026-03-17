@@ -640,6 +640,7 @@ input[type="date"] {
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .bottom-nav { display: flex; }
+  .bottom-nav-item { padding: 4px 6px; }
   .main-content { padding: 20px 16px 80px; }
   .dashboard-top { grid-template-columns: 1fr; }
   .stats-strip { grid-template-columns: repeat(2,1fr); }
@@ -852,6 +853,9 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       </a>
       <a href="#" data-page="myfoods" class="bottom-nav-item">
         <span>🗂️</span><span>食物庫</span>
+      </a>
+      <a href="#" id="settings-btn-mobile" class="bottom-nav-item" onclick="openSettingsModal()">
+        <span>⚙️</span><span>設定</span>
       </a>
     </nav>
 
