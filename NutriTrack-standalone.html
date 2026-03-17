@@ -827,7 +827,7 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         </a></li>
       </ul>
       <div class="sidebar-footer">
-        <button class="btn-reset" onclick="openSettingsModal()" style="background:rgba(56,178,172,0.1);color:var(--accent-teal);border-color:rgba(56,178,172,0.3)">
+        <button id="settings-btn-desktop" class="btn-reset" onclick="openSettingsModal()" style="background:rgba(56,178,172,0.1);color:var(--accent-teal);border-color:rgba(56,178,172,0.3)">
           <span>⚙️</span> 個人設定
         </button>
       </div>
@@ -1066,8 +1066,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
     </div>
   </div>
 
-  
-  
+  <script src="db.js?v=1.1"></script>
+  <script src="app.js?v=1.1"></script>
   
 
   <script>
@@ -1363,7 +1363,18 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('nav-myfoods').addEventListener('click', () => {
     // Ensuring it works if clicked directly in some cases
   });
+
+  // Dedicated listener for settings
+  document.getElementById('settings-btn-desktop')?.addEventListener('click', () => {
+    openSettingsModal();
+  });
 });
+
+// Explicitly make functions global for index.html onclick handlers
+window.openSettingsModal = openSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
+window.saveProfileSettings = saveProfileSettings;
+window.dangerResetAll = dangerResetAll;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {

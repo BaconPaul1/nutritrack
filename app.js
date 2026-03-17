@@ -172,7 +172,18 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('nav-myfoods').addEventListener('click', () => {
     // Ensuring it works if clicked directly in some cases
   });
+
+  // Dedicated listener for settings
+  document.getElementById('settings-btn-desktop')?.addEventListener('click', () => {
+    openSettingsModal();
+  });
 });
+
+// Explicitly make functions global for index.html onclick handlers
+window.openSettingsModal = openSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
+window.saveProfileSettings = saveProfileSettings;
+window.dangerResetAll = dangerResetAll;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
