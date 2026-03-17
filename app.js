@@ -170,7 +170,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v1.9 Loaded");
+  console.log("NutriTrack v2.0 Loaded (History Management)");
   load();
   if (State.profile) {
     showApp();
@@ -194,6 +194,8 @@ window.saveProfileSettings = saveProfileSettings;
 window.dangerResetAll = dangerResetAll;
 window.setWeightPeriod = setWeightPeriod;
 window.handleAIImage = handleAIImage;
+window.editWeight = editWeight;
+window.deleteWeight = deleteWeight;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -978,13 +980,17 @@ function progress() {
         ${State.weights.length ? [...State.weights].sort((a, b) => b.date.localeCompare(a.date)).map((w, i, arr) => {
     const prev = arr[i + 1];
     const diff = prev ? (w.kg - prev.kg).toFixed(1) : null;
-    return `<div class="weight-entry">
-            <span class="weight-date">${new Date(w.date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
-            <div>
-              <span class="weight-val">${w.kg} kg</span>
-              ${diff !== null ? `<span class="weight-diff" style="color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
-                ${diff > 0 ? '+' : ''}${diff}
+    return `<div class="weight-entry" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="weight-date">${new Date(w.date + 'T12:00:00').toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
+              <span class="weight-val" style="font-weight:700;">${w.kg} kg</span>
+              ${diff !== null ? `<span class="weight-diff" style="font-size:11px; color:${diff > 0 ? 'var(--accent-red)' : diff < 0 ? 'var(--accent-green)' : 'var(--text-muted)'}">
+                ${diff > 0 ? '↑' : diff < 0 ? '↓' : ''}${Math.abs(diff)}
               </span>` : ''}
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-icon" onclick="editWeight('${w.date}', ${w.kg})" style="width:28px; height:28px; font-size:12px;" title="編輯">✏️</button>
+              <button class="btn-icon" onclick="deleteWeight('${w.date}')" style="width:28px; height:28px; font-size:12px;" title="刪除">🗑️</button>
             </div>
           </div>`;
   }).join('') : `<div class="empty-state"><div class="empty-icon">⚖️</div><p>尚無體重記錄</p></div>`}
@@ -1026,12 +1032,36 @@ function logWeight() {
     alert('無法記錄未來的體重，請選擇今天或過去的日期。');
     return;
   }
-  // Remove existing entry for same date
+  // Remove existing entry for same date (Update logic)
   State.weights = State.weights.filter(w => w.date !== date);
   State.weights.push({ date, kg });
   // Update profile weight to latest
   const latest = [...State.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
   if (latest) State.profile.weight = latest.kg;
+  save();
+  navigate('progress');
+}
+
+function editWeight(date, kg) {
+  const dateInput = document.getElementById('w-date');
+  const kgInput = document.getElementById('w-kg');
+  if (dateInput && kgInput) {
+    dateInput.value = date;
+    kgInput.value = kg;
+    // Scroll to form
+    document.querySelector('.weight-input-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    kgInput.focus();
+  }
+}
+
+function deleteWeight(date) {
+  if (!confirm(`確定要刪除 ${date} 的體重記錄嗎？`)) return;
+  State.weights = State.weights.filter(w => w.date !== date);
+  // Update profile weight if we deleted the latest one
+  const latest = [...State.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (latest) {
+    State.profile.weight = latest.kg;
+  }
   save();
   navigate('progress');
 }
