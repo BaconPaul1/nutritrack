@@ -175,7 +175,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.5 Loaded (Exercise History)");
+  console.log("NutriTrack v2.6 Loaded (UI Refinement)");
   load();
   if (State.profile) {
     showApp();
@@ -650,7 +650,7 @@ function exercise() {
   const totalBurned = logs.reduce((s, e) => s + (e.burned || 0), 0);
   el.innerHTML = `
     <div class="page-header">
-      <div class="page-title"><h1>運動記錄 🏋️</h1><p>追蹤有氧與肌力訓練</p></div>
+      <div class="page-title"><h1>運動記錄 🏋️</h1><p>追蹤有氧與肌力訓練 · <span style="color:var(--accent-green);font-weight:600">今日已消耗 ${totalBurned} 大卡</span></p></div>
     </div>
     <div class="exercise-tabs">
       <button class="tab-btn active" id="tab-cardio" onclick="switchExTab('cardio')">有氧運動</button>
@@ -660,21 +660,6 @@ function exercise() {
     <div id="ex-panel">
       ${buildCardioPanel()}
     </div>
-    ${logs.length ? `<div class="card" style="margin-top:16px">
-      <div class="card-title" style="display:flex;justify-content:space-between">
-        <span>今日運動總計</span><span style="color:var(--accent-green);font-weight:700">${totalBurned} 大卡消耗</span>
-      </div>
-      ${logs.map((l, i) => `<div class="exercise-log-entry">
-        <div>
-          <div style="font-size:14px;font-weight:600">${l.icon || '🏃'} ${l.name}</div>
-          <div style="font-size:12px;color:var(--text-secondary)">${l.type === 'cardio' ? `${l.duration} 分鐘` : `${l.sets}組 × ${l.reps}次 × ${l.weight}kg`}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          ${l.burned ? `<span style="font-size:14px;font-weight:700;color:var(--accent-green)">-${l.burned} 大卡</span>` : `<span class="badge badge-teal">肌力</span>`}
-          <button class="btn-icon" onclick="removeExercise(${i})" style="width:28px;height:28px;font-size:12px">✕</button>
-        </div>
-      </div>`).join('')}
-    </div>` : ''}
     ${buildExerciseHistory()}
   `;
   return el;

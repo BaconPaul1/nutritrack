@@ -1191,23 +1191,25 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         <div class="loading-spinner"></div>
         <p style="margin-top:20px; color:var(--text-secondary)">正在識別相片中的食物並估算熱量...</p>
       </div>
-      <div id="ai-results-state" class="modal-body hidden">
-        <div id="ai-img-preview"
-          style="width:100%; height:200px; border-radius:12px; background-size:cover; background-position:center; margin-bottom:16px">
+      <div id="ai-results-state" class="modal-body hidden" style="flex:1; display:flex; flex-direction:column; overflow:hidden; padding:0">
+        <div style="padding:20px; overflow-y:auto; flex:1">
+          <div id="ai-img-preview"
+            style="width:100%; height:200px; border-radius:12px; background-size:cover; background-position:center; margin-bottom:16px">
+          </div>
+          <div id="ai-food-list" style="margin-bottom:20px">
+            <!-- AI Results will be injected here -->
+          </div>
+          <div class="form-group">
+            <label>分配至餐次</label>
+            <select id="ai-meal-target" style="width:100%">
+              <option value="breakfast">早餐</option>
+              <option value="lunch">午餐</option>
+              <option value="dinner">晚餐</option>
+              <option value="snacks">點心</option>
+            </select>
+          </div>
         </div>
-        <div id="ai-food-list" style="margin-bottom:20px">
-          <!-- AI Results will be injected here -->
-        </div>
-        <div class="form-group">
-          <label>分配至餐次</label>
-          <select id="ai-meal-target" style="width:100%">
-            <option value="breakfast">早餐</option>
-            <option value="lunch">午餐</option>
-            <option value="dinner">晚餐</option>
-            <option value="snacks">點心</option>
-          </select>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:24px">
+        <div style="padding:16px 20px; border-top:1px solid var(--border); background:rgba(255,255,255,0.02); display:flex; gap:12px">
           <button id="btn-ai-confirm" class="btn-primary" style="flex:1">加入日記</button>
           <button class="btn-secondary" onclick="document.getElementById('ai-modal').classList.add('hidden')"
             style="flex:1">取消</button>
@@ -1251,8 +1253,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.5"></script>
-  <script src="app.js?v=2.5"></script>
+  <script src="db.js?v=2.6"></script>
+  <script src="app.js?v=2.6"></script>
   
 
   <script>
@@ -1551,7 +1553,7 @@ function showApp() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.5 Loaded (Exercise History)");
+  console.log("NutriTrack v2.6 Loaded (UI Refinement)");
   load();
   if (State.profile) {
     showApp();
@@ -2026,7 +2028,7 @@ function exercise() {
   const totalBurned = logs.reduce((s, e) => s + (e.burned || 0), 0);
   el.innerHTML = `
     <div class="page-header">
-      <div class="page-title"><h1>運動記錄 🏋️</h1><p>追蹤有氧與肌力訓練</p></div>
+      <div class="page-title"><h1>運動記錄 🏋️</h1><p>追蹤有氧與肌力訓練 · <span style="color:var(--accent-green);font-weight:600">今日已消耗 ${totalBurned} 大卡</span></p></div>
     </div>
     <div class="exercise-tabs">
       <button class="tab-btn active" id="tab-cardio" onclick="switchExTab('cardio')">有氧運動</button>
@@ -2036,21 +2038,6 @@ function exercise() {
     <div id="ex-panel">
       ${buildCardioPanel()}
     </div>
-    ${logs.length ? `<div class="card" style="margin-top:16px">
-      <div class="card-title" style="display:flex;justify-content:space-between">
-        <span>今日運動總計</span><span style="color:var(--accent-green);font-weight:700">${totalBurned} 大卡消耗</span>
-      </div>
-      ${logs.map((l, i) => `<div class="exercise-log-entry">
-        <div>
-          <div style="font-size:14px;font-weight:600">${l.icon || '🏃'} ${l.name}</div>
-          <div style="font-size:12px;color:var(--text-secondary)">${l.type === 'cardio' ? `${l.duration} 分鐘` : `${l.sets}組 × ${l.reps}次 × ${l.weight}kg`}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          ${l.burned ? `<span style="font-size:14px;font-weight:700;color:var(--accent-green)">-${l.burned} 大卡</span>` : `<span class="badge badge-teal">肌力</span>`}
-          <button class="btn-icon" onclick="removeExercise(${i})" style="width:28px;height:28px;font-size:12px">✕</button>
-        </div>
-      </div>`).join('')}
-    </div>` : ''}
     ${buildExerciseHistory()}
   `;
   return el;

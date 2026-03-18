@@ -435,23 +435,25 @@
         <div class="loading-spinner"></div>
         <p style="margin-top:20px; color:var(--text-secondary)">正在識別相片中的食物並估算熱量...</p>
       </div>
-      <div id="ai-results-state" class="modal-body hidden">
-        <div id="ai-img-preview"
-          style="width:100%; height:200px; border-radius:12px; background-size:cover; background-position:center; margin-bottom:16px">
+      <div id="ai-results-state" class="modal-body hidden" style="flex:1; display:flex; flex-direction:column; overflow:hidden; padding:0">
+        <div style="padding:20px; overflow-y:auto; flex:1">
+          <div id="ai-img-preview"
+            style="width:100%; height:200px; border-radius:12px; background-size:cover; background-position:center; margin-bottom:16px">
+          </div>
+          <div id="ai-food-list" style="margin-bottom:20px">
+            <!-- AI Results will be injected here -->
+          </div>
+          <div class="form-group">
+            <label>分配至餐次</label>
+            <select id="ai-meal-target" style="width:100%">
+              <option value="breakfast">早餐</option>
+              <option value="lunch">午餐</option>
+              <option value="dinner">晚餐</option>
+              <option value="snacks">點心</option>
+            </select>
+          </div>
         </div>
-        <div id="ai-food-list" style="margin-bottom:20px">
-          <!-- AI Results will be injected here -->
-        </div>
-        <div class="form-group">
-          <label>分配至餐次</label>
-          <select id="ai-meal-target" style="width:100%">
-            <option value="breakfast">早餐</option>
-            <option value="lunch">午餐</option>
-            <option value="dinner">晚餐</option>
-            <option value="snacks">點心</option>
-          </select>
-        </div>
-        <div style="display:flex; gap:12px; margin-top:24px">
+        <div style="padding:16px 20px; border-top:1px solid var(--border); background:rgba(255,255,255,0.02); display:flex; gap:12px">
           <button id="btn-ai-confirm" class="btn-primary" style="flex:1">加入日記</button>
           <button class="btn-secondary" onclick="document.getElementById('ai-modal').classList.add('hidden')"
             style="flex:1">取消</button>
@@ -495,13 +497,13 @@
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.5"></script>
-  <script src="app.js?v=2.5"></script>
+  <script src="db.js?v=2.6"></script>
+  <script src="app.js?v=2.6"></script>
   <script>
     // Register Service Worker for PWA / offline support
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {  });
+        navigator.serviceWorker.register('./sw.js').catch(() => { });
       });
     }
   </script>
