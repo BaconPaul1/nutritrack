@@ -173,9 +173,14 @@ function showApp() {
   navigate('dashboard');
 }
 
+function openAiPicker() { document.getElementById('ai-picker-modal').classList.remove('hidden'); }
+function closeAiPicker() { document.getElementById('ai-picker-modal').classList.add('hidden'); }
+function triggerAiCamera() { closeAiPicker(); document.getElementById('ai-camera-input').click(); }
+function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-input').click(); }
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.6 Loaded (UI Refinement)");
+  console.log("NutriTrack v2.7 Loaded (AI Source Choice)");
   load();
   if (State.profile) {
     showApp();

@@ -226,8 +226,10 @@
         <div style="display:flex;gap:8px;align-items:center">
           <input type="file" id="ai-camera-input" accept="image/*" capture="environment" style="display:none"
             onchange="handleAIImage(event)">
-          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖"
-            style="padding: 6px 12px; font-size: 13px;">📸 AI</button>
+          <input type="file" id="ai-album-input" accept="image/*" style="display:none"
+            onchange="handleAIImage(event)">
+          <button class="btn-ai-scan" onclick="openAiPicker()" title="AI 識圖分析"
+            style="padding: 6px 12px; font-size: 13px;">🍱 AI</button>
           <button class="btn-scan" onclick="openBarcodeScanner()" title="掃描條碼">📷 條碼</button>
           <button class="modal-close" onclick="closeFoodModal()">✕</button>
         </div>
@@ -493,12 +495,33 @@
     </div>
   </div>
 
+  <!-- AI Source Picker Modal -->
+  <div id="ai-picker-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeAiPicker()"></div>
+    <div class="modal-content" style="max-width: 400px; padding: 24px; text-align: center;">
+      <h3 style="margin-bottom: 20px;">選擇 AI 識圖來源 🥗</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <button class="btn-primary" onclick="triggerAiCamera()"
+          style="height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border-radius: 16px;">
+          <span style="font-size: 28px;">📸</span>
+          <span style="font-weight: 700;">現場拍照</span>
+        </button>
+        <button class="btn-primary" onclick="triggerAiAlbum()"
+          style="height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: var(--accent-teal); border-radius: 16px;">
+          <span style="font-size: 28px;">🖼️</span>
+          <span style="font-weight: 700;">從相冊選取</span>
+        </button>
+      </div>
+      <button class="btn-secondary" onclick="closeAiPicker()" style="margin-top: 20px; width: 100%;">取消操作</button>
+    </div>
+  </div>
+
   <!-- Hidden Camera Input -->
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.6"></script>
-  <script src="app.js?v=2.6"></script>
+  <script src="db.js?v=2.7"></script>
+  <script src="app.js?v=2.7"></script>
   <script>
     // Register Service Worker for PWA / offline support
     if ('serviceWorker' in navigator) {
