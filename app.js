@@ -180,7 +180,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.7 Loaded (AI Source Choice)");
+  console.log("NutriTrack v2.8 Loaded (Date Fix)");
   load();
   if (State.profile) {
     showApp();
@@ -977,9 +977,10 @@ function progress() {
   const now = new Date();
   if (State.weightPeriod !== 'ALL') {
     const days = { '1W': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365 }[State.weightPeriod];
-    const cutoff = new Date();
-    cutoff.setDate(now.getDate() - days);
-    weights = weights.filter(w => new Date(w.date) >= cutoff);
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    const cutoffStr = cutoffDate.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    weights = weights.filter(w => w.date >= cutoffStr);
   }
 
   const periods = [
@@ -1069,8 +1070,8 @@ function logWeight() {
 
   if (!date || !kg || kg < 20 || kg > 300) { alert('請輸入有效的體重值'); return; }
 
-  // Future date check
-  if (new Date(date) > new Date()) {
+  // Future date check (String comparison is timezone-safe for YYYY-MM-DD)
+  if (date > todayStr()) {
     alert('無法記錄未來的體重，請選擇今天或過去的日期。');
     return;
   }
