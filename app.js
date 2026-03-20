@@ -180,7 +180,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.8 Loaded (Date Fix)");
+  console.log("NutriTrack v2.9 Loaded (AI Hints Support)");
   load();
   if (State.profile) {
     showApp();
@@ -1651,6 +1651,10 @@ function deleteMfFood(idx) {
 // ─── AI FOOD RECOGNITION ───────────────────────────────────────────────────
 let _aiPendingResults = [];
 
+// ─── AI FOOD RECOGNITION ───────────────────────────────────────────────────
+let _aiPendingResults = [];
+let _aiPendingBase64 = null;
+
 async function handleAIImage(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1661,31 +1665,49 @@ async function handleAIImage(event) {
     return;
   }
 
-  console.log("正在啟動 AI 識圖，檔案：", file.name);
   const modal = document.getElementById('ai-modal');
+  const prepare = document.getElementById('ai-prepare-state');
   const loading = document.getElementById('ai-loading-state');
   const results = document.getElementById('ai-results-state');
 
-  if (!modal) {
-    console.error("找不到 ai-modal 元素");
-    return;
-  }
   modal.classList.remove('hidden');
-  loading.classList.remove('hidden');
+  prepare.classList.remove('hidden');
+  loading.classList.add('hidden');
   results.classList.add('hidden');
 
   try {
-    const resizedBase64 = await resizeAndCompressImage(file);
-    // Show preview (can still use original if we want, but resized is safer)
-    document.getElementById('ai-img-preview').style.backgroundImage = `url(${resizedBase64})`;
+    _aiPendingBase64 = await resizeAndCompressImage(file);
+    document.getElementById('ai-img-preview-prepare').style.backgroundImage = `url(${_aiPendingBase64})`;
+    document.getElementById('ai-user-hint').value = ''; // Reset hint
+  } catch (err) {
+    console.error(err);
+    alert("圖片處理失敗");
+    modal.classList.add('hidden');
+  } finally {
+    event.target.value = '';
+  }
+}
+
+async function startAiAnalysis() {
+  const prepare = document.getElementById('ai-prepare-state');
+  const loading = document.getElementById('ai-loading-state');
+  const results = document.getElementById('ai-results-state');
+  const hint = document.getElementById('ai-user-hint').value.trim();
+
+  prepare.classList.add('hidden');
+  loading.classList.remove('hidden');
+
+  try {
+    // Show preview in final results too
+    document.getElementById('ai-img-preview').style.backgroundImage = `url(${_aiPendingBase64})`;
 
     // Predetermine meal if possible
     if (State.pendingMeal) {
       document.getElementById('ai-meal-target').value = State.pendingMeal;
     }
 
-    // Call Gemini
-    const data = await analyzeFoodImage(resizedBase64);
+    // Call Gemini with optional hint
+    const data = await analyzeFoodImage(_aiPendingBase64, hint);
     _aiPendingResults = data.items || [];
 
     // Render results
@@ -1696,9 +1718,7 @@ async function handleAIImage(event) {
   } catch (err) {
     console.error(err);
     alert("AI 分析失敗：" + err.message);
-    modal.classList.add('hidden');
-  } finally {
-    event.target.value = ''; // clear input
+    document.getElementById('ai-modal').classList.add('hidden');
   }
 }
 
@@ -1747,9 +1767,13 @@ function fileToBase64(file) {
   });
 }
 
-async function analyzeFoodImage(base64) {
+async function analyzeFoodImage(base64, hint = "") {
   const apiKey = State.profile.geminiKey;
-  const prompt = "您是一位精確的營養師。請分析這張照片中的食物。估算每種食物的名稱、大概重量(g)、熱量(kcal)、蛋白質(g)、碳水(g)、脂肪(g)。請務必僅以 JSON 格式回傳，格式如下：{\"items\": [{\"name\":\"食物名\",\"weight\":150, \"kcal\":200, \"protein\":15, \"carbs\":20, \"fat\":5}]}";
+  let prompt = "您是一位精確的營養師。請分析這張照片中的食物。估算每種食物的名稱、大概重量(g)、熱量(kcal)、蛋白質(g)、碳水(g)、脂肪(g)。請務必僅以 JSON 格式回傳，格式如下：{\"items\": [{\"name\":\"食物名\",\"weight\":150, \"kcal\":200, \"protein\":15, \"carbs\":20, \"fat\":5}]}";
+
+  if (hint) {
+    prompt += `\n使用者的補充資訊：${hint}。請優先參考此資訊。`;
+  }
 
   // Strip metadata prefix if present
   const base64Data = base64.split(',')[1];
