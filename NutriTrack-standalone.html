@@ -1186,7 +1186,9 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
   <div id="ai-modal" class="modal hidden">
     <div class="modal-backdrop" onclick="document.getElementById('ai-modal').classList.add('hidden')"></div>
     <div class="modal-content" style="max-width: 450px">
-      <div class="modal-header">
+        <h2 class="modal-title">AI 營養師辨識 🍱</h2>
+        <button class="modal-close" onclick="document.getElementById('ai-modal').classList.add('hidden')">✕</button>
+      </div>
       <!-- AI Prepare State (Pre-analysis hints) -->
       <div id="ai-prepare-state" class="modal-body hidden" style="flex:1; display:flex; flex-direction:column; padding:20px">
         <div id="ai-img-preview-prepare"
@@ -1292,8 +1294,8 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.9.2"></script>
-  <script src="app.js?v=2.9.2"></script>
+  
+  
   
 
   <script>

@@ -430,7 +430,9 @@
   <div id="ai-modal" class="modal hidden">
     <div class="modal-backdrop" onclick="document.getElementById('ai-modal').classList.add('hidden')"></div>
     <div class="modal-content" style="max-width: 450px">
-      <div class="modal-header">
+        <h2 class="modal-title">AI 營養師辨識 🍱</h2>
+        <button class="modal-close" onclick="document.getElementById('ai-modal').classList.add('hidden')">✕</button>
+      </div>
       <!-- AI Prepare State (Pre-analysis hints) -->
       <div id="ai-prepare-state" class="modal-body hidden" style="flex:1; display:flex; flex-direction:column; padding:20px">
         <div id="ai-img-preview-prepare"

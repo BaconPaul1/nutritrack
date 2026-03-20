@@ -46,8 +46,8 @@ body_match = re.search(r'<body>(.*)</body>', orig, re.DOTALL)
 body_inner = body_match.group(1) if body_match else orig
 
 # 移除外部 script 標籤（我們改為內嵌）
-body_inner = re.sub(r'<script src="db\.js"></script>', '', body_inner)
-body_inner = re.sub(r'<script src="app\.js"></script>', '', body_inner)
+body_inner = re.sub(r'<script src="db\.js[^"]*"></script>', '', body_inner)
+body_inner = re.sub(r'<script src="app\.js[^"]*"></script>', '', body_inner)
 body_inner = re.sub(r'<script src="https://unpkg[^"]*"></script>', '', body_inner)
 body_inner = re.sub(r'<link rel="manifest"[^>]*>', '', body_inner)
 body_inner = re.sub(r'(?s)<script>\s*// Register Service Worker.*?</script>', '', body_inner)
