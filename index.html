@@ -430,6 +430,7 @@
   <div id="ai-modal" class="modal hidden">
     <div class="modal-backdrop" onclick="document.getElementById('ai-modal').classList.add('hidden')"></div>
     <div class="modal-content" style="max-width: 450px">
+      <div class="modal-header">
         <h2 class="modal-title">AI 營養師辨識 🍱</h2>
         <button class="modal-close" onclick="document.getElementById('ai-modal').classList.add('hidden')">✕</button>
       </div>
@@ -538,8 +539,8 @@
   <input type="file" id="progress-photo-input" accept="image/*" capture="camera" style="display:none"
     onchange="handleProgressPhotoUpload(event)">
 
-  <script src="db.js?v=2.9.2"></script>
-  <script src="app.js?v=2.9.2"></script>
+  <script src="db.js?v=2.9.4"></script>
+  <script src="app.js?v=2.9.4"></script>
   <script>
     // Register Service Worker for PWA / offline support
     if ('serviceWorker' in navigator) {

@@ -1186,6 +1186,7 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
   <div id="ai-modal" class="modal hidden">
     <div class="modal-backdrop" onclick="document.getElementById('ai-modal').classList.add('hidden')"></div>
     <div class="modal-content" style="max-width: 450px">
+      <div class="modal-header">
         <h2 class="modal-title">AI 營養師辨識 🍱</h2>
         <button class="modal-close" onclick="document.getElementById('ai-modal').classList.add('hidden')">✕</button>
       </div>
@@ -1599,7 +1600,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.9.2 Loaded (AI Fix)");
+  console.log("NutriTrack v2.9.4 Loaded (UI Fix)");
   load();
   if (State.profile) {
     showApp();

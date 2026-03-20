@@ -180,7 +180,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.9.2 Loaded (AI Fix)");
+  console.log("NutriTrack v2.9.4 Loaded (UI Fix)");
   load();
   if (State.profile) {
     showApp();
