@@ -180,7 +180,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.9 Loaded (AI Hints Support)");
+  console.log("NutriTrack v2.9.2 Loaded (AI Fix)");
   load();
   if (State.profile) {
     showApp();
@@ -211,6 +211,11 @@ window.handleProgressPhotoUpload = handleProgressPhotoUpload;
 window.viewProgressPhoto = viewProgressPhoto;
 window.revealProgressPhoto = revealProgressPhoto;
 window.deleteProgressPhoto = deleteProgressPhoto;
+window.openAiPicker = openAiPicker;
+window.closeAiPicker = closeAiPicker;
+window.triggerAiCamera = triggerAiCamera;
+window.triggerAiAlbum = triggerAiAlbum;
+window.startAiAnalysis = startAiAnalysis;
 
 // ─── SETTINGS MODAL ──────────────────────────────────────────────────────────
 function openSettingsModal() {
@@ -477,7 +482,7 @@ function buildDiaryHTML(date) {
       <div class="page-title">
         <h1 style="display:flex; align-items:center; gap:12px; font-size: 24px;">
           飲食日記 📖
-          <button class="btn-ai-scan" onclick="document.getElementById('ai-camera-input').click()" title="AI 拍照識圖" style="padding: 4px 10px; font-size: 11px; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2); border-radius: 20px;">📸 AI</button>
+          <button class="btn-ai-scan" onclick="openAiPicker()" title="AI 識圖分析" style="padding: 4px 10px; font-size: 11px; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2); border-radius: 20px;">📸 AI</button>
         </h1>
         <p>記錄每一餐的攝取</p>
       </div>
