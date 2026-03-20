@@ -1650,9 +1650,6 @@ function deleteMfFood(idx) {
 }
 // ─── AI FOOD RECOGNITION ───────────────────────────────────────────────────
 let _aiPendingResults = [];
-
-// ─── AI FOOD RECOGNITION ───────────────────────────────────────────────────
-let _aiPendingResults = [];
 let _aiPendingBase64 = null;
 
 async function handleAIImage(event) {
