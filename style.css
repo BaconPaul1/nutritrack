@@ -517,7 +517,7 @@ canvas { max-width: 100%; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
 }
-.modal-header h3 { font-size: 17px; font-weight: 700; }
+.modal-header h3, .modal-title { font-size: 17px; font-weight: 700; margin: 0; }
 .modal-close {
   width: 32px; height: 32px; background: rgba(255,255,255,0.06);
   border: none; border-radius: 50%; color: var(--text-secondary);

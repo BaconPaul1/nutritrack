@@ -534,7 +534,7 @@ canvas { max-width: 100%; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
 }
-.modal-header h3 { font-size: 17px; font-weight: 700; }
+.modal-header h3, .modal-title { font-size: 17px; font-weight: 700; margin: 0; }
 .modal-close {
   width: 32px; height: 32px; background: rgba(255,255,255,0.06);
   border: none; border-radius: 50%; color: var(--text-secondary);
@@ -1021,7 +1021,6 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
       </div>
       <button class="btn-primary" onclick="addCustomFood()">新增自訂食物</button>
     </div>
-  </div>
   </div>
 
   <!-- Serving Size Modal -->
@@ -1600,7 +1599,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.9.4 Loaded (UI Fix)");
+  console.log("NutriTrack v2.9.5 Loaded (UI Fix)");
   load();
   if (State.profile) {
     showApp();
