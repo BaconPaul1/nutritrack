@@ -1829,11 +1829,12 @@ function fileToBase64(file) {
 
 async function analyzeFoodImage(base64, hint = "") {
   const apiKey = State.profile.geminiKey;
-  let prompt = "您是一位精確的營養師。請分析這張照片中的食物。估算每種食物的名稱、大概重量(g)、熱量(kcal)、蛋白質(g)、碳水(g)、脂肪(g)。請務必僅以 JSON 格式回傳，格式如下：{\"items\": [{\"name\":\"食物名\",\"weight\":150, \"kcal\":200, \"protein\":15, \"carbs\":20, \"fat\":5}]}";
-
-  if (hint) {
-    prompt += `\n使用者的補充資訊：${hint}。請優先參考此資訊。`;
-  }
+  let prompt = `你是一個專業的營養師與食物辨識 AI。
+這是一張包含食物照片的圖片（如果圖片是由多張照片拼合而成的，請識別每一張小圖中的食物）。
+${hint ? `用戶提供的補充說明： "${hint}"` : ""}
+請識別圖片中的所有食物項目，並估算其重量 (g)、熱量 (kcal)、蛋白質 (g)、碳水 (g)、脂肪 (g)。
+請務必僅以 JSON 格式回傳，格式如下：
+{"items": [{"name":"食物名稱", "weight":克數, "kcal":熱量, "protein":蛋白質, "carbs":碳水, "fat":脂肪}]}`;
 
   // Strip metadata prefix if present
   const base64Data = base64.split(',')[1];
