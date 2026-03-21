@@ -1,5 +1,5 @@
 // NutriTrack Service Worker – offline cache
-const CACHE = 'nutritrack-v2.9.5';
+const CACHE = 'nutritrack-v2.10';
 const ASSETS = [
   './index.html',
   './style.css',

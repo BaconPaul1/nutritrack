@@ -982,7 +982,7 @@ var __Html5QrcodeLibrary__;(()=>{var t={449:function(t,e,r){!function(t){"use st
         <div style="display:flex;gap:8px;align-items:center">
           <input type="file" id="ai-camera-input" accept="image/*" capture="environment" style="display:none"
             onchange="handleAIImage(event)">
-          <input type="file" id="ai-album-input" accept="image/*" style="display:none"
+          <input type="file" id="ai-album-input" accept="image/*" multiple style="display:none"
             onchange="handleAIImage(event)">
           <button class="btn-ai-scan" onclick="openAiPicker()" title="AI 識圖分析"
             style="padding: 6px 12px; font-size: 13px;">🍱 AI</button>
@@ -1599,7 +1599,7 @@ function triggerAiAlbum() { closeAiPicker(); document.getElementById('ai-album-i
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  console.log("NutriTrack v2.9.5 Loaded (UI Fix)");
+  console.log("NutriTrack v2.10 Loaded (Multi-Photo Support)");
   load();
   if (State.profile) {
     showApp();
@@ -3077,8 +3077,8 @@ let _aiPendingResults = [];
 let _aiPendingBase64 = null;
 
 async function handleAIImage(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+  const files = Array.from(event.target.files);
+  if (files.length === 0) return;
   if (!State.profile?.geminiKey) {
     console.warn("AI 識圖失敗：缺少 API Key");
     alert("請先在「個人設定」中輸入您的 Google Gemini API Key 才能開啟 AI 功能。");
@@ -3097,16 +3097,74 @@ async function handleAIImage(event) {
   results.classList.add('hidden');
 
   try {
-    _aiPendingBase64 = await resizeAndCompressImage(file);
+    if (files.length === 1) {
+      _aiPendingBase64 = await resizeAndCompressImage(files[0]);
+    } else {
+      // Merge multiple images
+      _aiPendingBase64 = await mergeImagesIntoOne(files);
+    }
     document.getElementById('ai-img-preview-prepare').style.backgroundImage = `url(${_aiPendingBase64})`;
     document.getElementById('ai-user-hint').value = ''; // Reset hint
   } catch (err) {
     console.error(err);
-    alert("圖片處理失敗");
+    alert("圖片處理失敗: " + err.message);
     modal.classList.add('hidden');
   } finally {
     event.target.value = '';
   }
+}
+
+/**
+ * Merges multiple files into a single collage (max 4 images)
+ */
+async function mergeImagesIntoOne(files) {
+  const images = await Promise.all(
+    files.slice(0, 4).map(file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    }))
+  );
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Design grid: 1x2, 2x1, or 2x2
+  const count = images.length;
+  const cols = count > 1 ? 2 : 1;
+  const rows = Math.ceil(count / 2);
+  
+  const singleW = 600;
+  const singleH = 600;
+  canvas.width = cols * singleW;
+  canvas.height = rows * singleH;
+  
+  images.forEach((img, i) => {
+    const x = (i % 2) * singleW;
+    const y = Math.floor(i / 2) * singleH;
+    
+    // Draw with "cover" logic manually
+    const ratio = Math.max(singleW / img.width, singleH / img.height);
+    const nw = img.width * ratio;
+    const nh = img.height * ratio;
+    const offX = (singleW - nw) / 2;
+    const offY = (singleH - nh) / 2;
+    
+    ctx.drawImage(img, x + offX, y + offY, nw, nh);
+    
+    // Optional: Draw a thin white border between images
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, singleW, singleH);
+  });
+  
+  return canvas.toDataURL('image/jpeg', 0.6);
 }
 
 async function startAiAnalysis() {
